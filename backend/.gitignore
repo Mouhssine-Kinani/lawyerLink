@@ -12,4 +12,3 @@ __pycache__/
 # Distribution / packaging
 node_modules/
 .env
-.env.*
