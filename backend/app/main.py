@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.database import engine, Base
+from app.core.database import engine, Base
 
 # Import all models before calling create_all so SQLAlchemy knows about them
 import app.user.model
