@@ -1,11 +1,25 @@
 from dotenv import load_dotenv
 import os
 
+# load all variables from .env
 load_dotenv()
 
-DATABASE_URL = os.getenv("DATABASE_URL")
-SECRET_KEY = os.getenv("SECRET_KEY")
-ALGORITHM = os.getenv("ALGORITHM", "HS256")  # HS256 is the default if not set in .env
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 60))
-AI_API_KEY = os.getenv("AI_API_KEY")
-ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173")
+class Settings():
+    """Application settings loaded from environnement variables"""
+    DATABASE_URL:str = os.getenv("DATABASE_URL")
+    SECRET_KEY:str = os.getenv("SECRET_KEY")
+    ALGORITHM:str = os.getenv("ALGORITHM","HS256")
+    ACCESS_TOKEN_EXPIRE_MINUTES:int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES",60))
+    AI_API_KEY:str = os.getenv("AI_API_KEY","")
+    ALLOWED_ORIGINS:str = os.getenv("ALLOWED_ORIGINS","http://localhost:5173")
+    # upload
+    UPLOAD_DIR:str = "uploads/profiles"
+    MAX_FILE_SIZE_MB: int = 2
+    MAX_IMAGE_DIMENSION: int = 400
+
+settings = Settings()
+
+if not settings.DATABASE_URL:
+    raise ValueError("DATABASE_URL not set in .env files")
+if not settings.SECRET_KEY:
+    raise ValueError("SECRET_KEY not set in .env files")
