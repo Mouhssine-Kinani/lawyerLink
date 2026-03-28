@@ -5,4 +5,4 @@ pymysql
 python-dotenv
 cryptography
 google-genai
-pydantic
+Pillow
