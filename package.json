@@ -2,7 +2,7 @@
   "name": "lawyerlink",
   "scripts": {
     "frontend": "cd frontend && npm run dev",
-    "backend": "cd backend && .venv/Scripts/uvicorn app.main:app --reload",
+    "backend": "cd backend && uvicorn app.main:app --reload",
     "dev": "concurrently -n BACKEND,FRONTEND -c bgBlue.bold,bgGreen.bold \"npm run backend\" \"npm run frontend\""
   },
   "devDependencies": {
