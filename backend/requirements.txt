@@ -6,3 +6,7 @@ python-dotenv
 cryptography
 google-genai
 Pillow
+email-validator
+python-jose[cryptography]
+passlib[bcrypt]
+bcrypt==3.2.0
