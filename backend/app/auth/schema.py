@@ -25,6 +25,6 @@ class UserResponse(BaseModel):
     created_at:str
 
     class Config:
-        from_attributes:True
+        from_attributes=True
 
 
