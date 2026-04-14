@@ -2,6 +2,8 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from app.core.database import engine, Base
 from fastapi.middleware.cors import CORSMiddleware
+
+
 from app.core.config import settings
 from app.auth import router as auth_router
 
