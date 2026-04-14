@@ -3,11 +3,13 @@ from fastapi.staticfiles import StaticFiles
 from app.core.database import engine, Base
 from fastapi.middleware.cors import CORSMiddleware
 
-
+# apps
 from app.core.config import settings
 from app.auth import router as auth_router
+from app.user import router as user_router
+from app.chat import router as chat_router
 
-
+#models
 import app.user.model
 import app.lawyer.model
 import app.chat.model
@@ -38,6 +40,8 @@ app.add_middleware(
 )
 # routers
 app.include_router(auth_router.router)
+app.include_router(user_router.router)
+app.include_router(chat_router.router)
 
 
 @app.get("/")
@@ -47,34 +51,3 @@ def index():
 @app.get("/health")
 def health_check():
     return {"status": "healthy"}
-
-
-
-
-
-
-
-# from fastapi import FastAPI
-# from app.core.database import engine, Base
-
-# # Import all models before calling create_all so SQLAlchemy knows about them
-# import app.user.model
-# import app.lawyer.model
-# import app.chat.model
-# import app.reservation.model
-# import app.review.model
-# import app.recommendation.model
-# import app.payment.model
-
-
-# # In a setup script or temporary route
-# # Base.metadata.drop_all(bind=engine)
-
-# # Create the database tables
-# Base.metadata.create_all(bind=engine)
-
-# app = FastAPI()
-
-# @app.get("/")
-# def index():
-#     return {"message": "nice"}

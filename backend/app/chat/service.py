@@ -1,10 +1,10 @@
 from google import genai
 from google.genai import types
-from app.core.config import AI_API_KEY
+from app.core.config import settings
 from sqlalchemy.orm import Session
 from app.chat.model import ChatMessage
 
-client = genai.Client(api_key=AI_API_KEY)
+client = genai.Client(api_key=settings.AI_API_KEY)
 
 # ✅ Fix 6 — use stable model name
 MODEL = "gemini-2.0-flash"
