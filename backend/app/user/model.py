@@ -16,6 +16,8 @@ class User(Base):
     email = Column(String(255), unique=True, nullable=False)
     password_hash = Column(String(255), nullable=False)
     role = Column(SAEnum(Role), default=Role.client, nullable=False)
+    city = Column(String(255), nullable=True)
+    region = Column(String(255), nullable=True)
     image_url = Column(String(500), nullable=True)
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
 
@@ -34,3 +36,4 @@ class Client(Base):
     recommendations = relationship("RecommendationLog", back_populates="client")
     reservations = relationship("Reservation", back_populates="client")
     reviews = relationship("Review", back_populates="client")
+    
