@@ -1,0 +1,312 @@
+============================================================
+FRONTEND STRUCTURE
+============================================================
+
+============================================================
+PAGES
+============================================================
+
+# AdminDashboard
+FILE: frontend/src/pages/admin/AdminDashboard.jsx
+------------------------------------------------------------
+
+
+# LawyerApprovalPage
+FILE: frontend/src/pages/admin/LawyerApprovalPage.jsx
+------------------------------------------------------------
+
+
+# UsersPage
+FILE: frontend/src/pages/admin/UsersPage.jsx
+------------------------------------------------------------
+
+
+# LoginPage
+FILE: frontend/src/pages/auth/LoginPage.jsx
+------------------------------------------------------------
+
+
+# RegisterPage
+FILE: frontend/src/pages/auth/RegisterPage.jsx
+------------------------------------------------------------
+
+
+# ChatPage
+FILE: frontend/src/pages/client/ChatPage.jsx
+------------------------------------------------------------
+
+
+# LawyerListPage
+FILE: frontend/src/pages/client/LawyerListPage.jsx
+------------------------------------------------------------
+
+
+# LawyerProfilePage
+FILE: frontend/src/pages/client/LawyerProfilePage.jsx
+------------------------------------------------------------
+
+
+# MyReservationsPage
+FILE: frontend/src/pages/client/MyReservationsPage.jsx
+------------------------------------------------------------
+
+
+# RecommendationsPage
+FILE: frontend/src/pages/client/RecommendationsPage.jsx
+------------------------------------------------------------
+
+
+# ReservationPage
+FILE: frontend/src/pages/client/ReservationPage.jsx
+------------------------------------------------------------
+
+
+# ReviewPage
+FILE: frontend/src/pages/client/ReviewPage.jsx
+------------------------------------------------------------
+
+
+# BoostPage
+FILE: frontend/src/pages/lawyer/BoostPage.jsx
+------------------------------------------------------------
+
+
+# DashboardPage
+FILE: frontend/src/pages/lawyer/DashboardPage.jsx
+------------------------------------------------------------
+
+
+# MyReservationsPage
+FILE: frontend/src/pages/lawyer/MyReservationsPage.jsx
+------------------------------------------------------------
+
+
+# ProfileEditPage
+FILE: frontend/src/pages/lawyer/ProfileEditPage.jsx
+------------------------------------------------------------
+
+
+# SubscriptionPage
+FILE: frontend/src/pages/lawyer/SubscriptionPage.jsx
+------------------------------------------------------------
+
+
+
+============================================================
+COMPONENTS
+============================================================
+
+# ChatInput
+FILE: frontend/src/components/chat/ChatInput.jsx
+------------------------------------------------------------
+
+
+# ChatMessage
+FILE: frontend/src/components/chat/ChatMessage.jsx
+------------------------------------------------------------
+
+
+# ChatWindow
+FILE: frontend/src/components/chat/ChatWindow.jsx
+------------------------------------------------------------
+
+
+# LoadingSpinner
+FILE: frontend/src/components/common/LoadingSpinner.jsx
+------------------------------------------------------------
+
+
+# Modal
+FILE: frontend/src/components/common/Modal.jsx
+------------------------------------------------------------
+
+
+# Pagination
+FILE: frontend/src/components/common/Pagination.jsx
+------------------------------------------------------------
+
+
+# PrivateRoute
+FILE: frontend/src/components/common/PrivateRoute.jsx
+------------------------------------------------------------
+
+
+# RoleRoute
+FILE: frontend/src/components/common/RoleRoute.jsx
+------------------------------------------------------------
+
+
+# LawyerCard
+FILE: frontend/src/components/lawyer/LawyerCard.jsx
+------------------------------------------------------------
+
+
+# LawyerFilter
+FILE: frontend/src/components/lawyer/LawyerFilter.jsx
+------------------------------------------------------------
+
+
+# StarRating
+FILE: frontend/src/components/lawyer/StarRating.jsx
+------------------------------------------------------------
+
+
+# Footer
+FILE: frontend/src/components/layout/Footer.jsx
+------------------------------------------------------------
+
+
+# Navbar
+FILE: frontend/src/components/layout/Navbar.jsx
+------------------------------------------------------------
+
+
+# Sidebar
+FILE: frontend/src/components/layout/Sidebar.jsx
+------------------------------------------------------------
+
+
+# PaymentForm
+FILE: frontend/src/components/payment/PaymentForm.jsx
+------------------------------------------------------------
+
+
+# ReservationCard
+FILE: frontend/src/components/reservation/ReservationCard.jsx
+------------------------------------------------------------
+
+
+# StatusBadge
+FILE: frontend/src/components/reservation/StatusBadge.jsx
+------------------------------------------------------------
+
+
+
+============================================================
+ROUTES
+============================================================
+
+# ROUTES
+FILE: frontend/src/App.jsx
+------------------------------------------------------------
+import { useState } from 'react'
+import reactLogo from './assets/react.svg'
+import viteLogo from './assets/vite.svg'
+import heroImg from './assets/hero.png'
+import './App.css'
+
+function App() {
+  const [count, setCount] = useState(0)
+
+  return (
+    <>
+      <section id="center">
+        <div className="hero">
+          <img src={heroImg} className="base" width="170" height="179" alt="" />
+          <img src={reactLogo} className="framework" alt="React logo" />
+          <img src={viteLogo} className="vite" alt="Vite logo" />
+        </div>
+        <div>
+          <h1>Get started</h1>
+          <p>
+            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
+          </p>
+        </div>
+        <button
+          className="counter"
+          onClick={() => setCount((count) => count + 1)}
+        >
+          Count is {count}
+        </button>
+      </section>
+
+      <div className="ticks"></div>
+
+      <section id="next-steps">
+        <div id="docs">
+          <svg className="icon" role="presentation" aria-hidden="true">
+            <use href="/icons.svg#documentation-icon"></use>
+          </svg>
+          <h2>Documentation</h2>
+          <p>Your questions, answered</p>
+          <ul>
+            <li>
+              <a href="https://vite.dev/" target="_blank">
+                <img className="logo" src={viteLogo} alt="" />
+                Explore Vite
+              </a>
+            </li>
+            <li>
+              <a href="https://react.dev/" target="_blank">
+                <img className="button-icon" src={reactLogo} alt="" />
+                Learn more
+              </a>
+            </li>
+          </ul>
+        </div>
+        <div id="social">
+          <svg className="icon" role="presentation" aria-hidden="true">
+            <use href="/icons.svg#social-icon"></use>
+          </svg>
+          <h2>Connect with us</h2>
+          <p>Join the Vite community</p>
+          <ul>
+            <li>
+              <a href="https://github.com/vitejs/vite" target="_blank">
+                <svg
+                  className="button-icon"
+                  role="presentation"
+                  aria-hidden="true"
+                >
+                  <use href="/icons.svg#github-icon"></use>
+                </svg>
+                GitHub
+              </a>
+            </li>
+            <li>
+              <a href="https://chat.vite.dev/" target="_blank">
+                <svg
+                  className="button-icon"
+                  role="presentation"
+                  aria-hidden="true"
+                >
+                  <use href="/icons.svg#discord-icon"></use>
+                </svg>
+                Discord
+              </a>
+            </li>
+            <li>
+              <a href="https://x.com/vite_js" target="_blank">
+                <svg
+                  className="button-icon"
+                  role="presentation"
+                  aria-hidden="true"
+                >
+                  <use href="/icons.svg#x-icon"></use>
+                </svg>
+                X.com
+              </a>
+            </li>
+            <li>
+              <a href="https://bsky.app/profile/vite.dev" target="_blank">
+                <svg
+                  className="button-icon"
+                  role="presentation"
+                  aria-hidden="true"
+                >
+                  <use href="/icons.svg#bluesky-icon"></use>
+                </svg>
+                Bluesky
+              </a>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <div className="ticks"></div>
+      <section id="spacer"></section>
+    </>
+  )
+}
+
+export default App

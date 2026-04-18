@@ -23,3 +23,9 @@ dist-ssr
 *.sln
 *.sw?
 .env
+
+#work files
+backend_structure.txt
+frontend_structure.txt
+export_project_structure.py
+uploads/

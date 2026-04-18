@@ -1,3 +1,6 @@
 node_modules
 package-lock.json
 uploads
+backend_structure.txt
+frontend_structure.txt
+export_project_structure.py
