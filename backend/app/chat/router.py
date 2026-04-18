@@ -35,15 +35,12 @@ def send_message(
     body: MessageCreate,
     db: Session = Depends(get_db)
 ):
-    """
-    Client sends a message → saved to DB → AI replies → saved to DB.
-    """
     # 1. Check session exists
     session = db.query(ChatSession).filter(ChatSession.id == session_id).first()
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
 
-    # 2. Save client message ✅ Fix 3
+    # 2. Save client message
     client_msg = ChatMessage(
         session_id=session_id,
         sender="client",
@@ -54,23 +51,18 @@ def send_message(
 
     # 3. Get AI response
     try:
-        ai_text = service.get_ai_response(session_id, body.content, db)
+        result = service.get_ai_response(session_id, body.content, db)
     except Exception as e:
-        # The google-genai SDK uses 'code' for status. We use getattr for safety.
         status_code = getattr(e, "code", None) or getattr(e, "status_code", 500)
-        
         if status_code == 429:
-            raise HTTPException(status_code=429, detail="AI Quota exceeded. Please try again in a few moments.")
-        if status_code == 404:
-            raise HTTPException(status_code=502, detail=f"AI Model Error: The model '{service.MODEL}' was not found. Please check your API key permissions.")
-            
+            raise HTTPException(status_code=429, detail="AI quota exceeded. Please try again in a few moments.")
         raise HTTPException(status_code=502, detail=f"AI Service Error: {str(e)}")
 
-    # 4. Save AI message ✅ Fix 3
+    # 4. Save AI message
     ai_msg = ChatMessage(
         session_id=session_id,
         sender="ai",
-        content=ai_text
+        content=result["message"]
     )
     db.add(ai_msg)
     db.commit()
@@ -78,9 +70,10 @@ def send_message(
     return ChatResponse(
         session_id=session_id,
         user_message=body.content,
-        ai_response=ai_text
+        ai_response=result["message"],
+        ready=result["ready"],
+        recommendation=result["recommendation"]
     )
-
 
 @router.get("/session/{session_id}/history")
 def get_history(session_id: int, db: Session = Depends(get_db)):

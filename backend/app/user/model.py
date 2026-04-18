@@ -27,9 +27,9 @@ class User(Base):
 class Client(Base):
     __tablename__ = "clients"
     user_id = Column(BigInteger, ForeignKey("users.id"), primary_key=True)
-    full_name = Column(String(255), nullable=True)
-    phone = Column(String(50), nullable=True)
-    image_url = Column(String(500), nullable=True)
+    first_name = Column(String(255), nullable=False)
+    last_name = Column(String(255), nullable=False)
+    phone = Column(String(50), nullable=False)
 
     user = relationship("User", back_populates="client_profile")
     chat_sessions = relationship("ChatSession", back_populates="client")
