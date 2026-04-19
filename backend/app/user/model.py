@@ -1,3 +1,4 @@
+#backend/app/user/model.py
 from app.core.database import Base
 from sqlalchemy import Column, BigInteger, String, DateTime, Enum as SAEnum, ForeignKey
 from sqlalchemy.orm import relationship
