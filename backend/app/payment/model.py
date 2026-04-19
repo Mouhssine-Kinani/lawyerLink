@@ -1,3 +1,4 @@
+# backend/app/payement/model.py
 from app.core.database import Base
 from sqlalchemy import Column, BigInteger, Integer, DateTime, Date, Enum as SAEnum, ForeignKey, DECIMAL
 from sqlalchemy.orm import relationship

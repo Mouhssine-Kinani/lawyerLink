@@ -16,7 +16,7 @@ def get_current_user(credentials:HTTPAuthorizationCredentials = Depends(security
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,details="invalid token: missing user_id")
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail=str(e))
-    user = db.query(User).filter(int(user_id) == User.id).first()
+    user = db.query(User).filter(User.id == int(user_id)).first()
     if user is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail="User not found")
     return user

@@ -28,18 +28,16 @@ def register(request:RegisterRequest,db:Session = Depends(get_db)):
     if request.role == "client":
         client = Client(
             user_id=user.id,
-            full_name=request.full_name,
+            first_name=request.first_name,
+            last_name=request.last_name,
             phone=request.phone
         )
         db.add(client)
     elif request.role == "lawyer":
-        name_parts = request.full_name.split()
-        first_name = name_parts[0] if name_parts else ""
-        last_name = " ".join(name_parts[1:]) if len(name_parts) > 1 else ""
         lawyer = Lawyer(
-            user_id = user.id,
-            first_name = first_name,
-            last_name = last_name
+            user_id=user.id,
+            first_name=request.first_name,
+            last_name=request.last_name
         )
         db.add(lawyer)
     else:
