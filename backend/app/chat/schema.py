@@ -1,4 +1,4 @@
-# app/chat/schema.py
+# backend/app/chat/schema.py
 from pydantic import BaseModel
 from datetime import datetime
 from app.chat.model import SenderEnum
@@ -18,7 +18,7 @@ class SessionResponse(BaseModel):
     created_at: datetime
 
     class Config:
-        from_attributes = True  # Pydantic v2  (use orm_mode = True for v1)
+        from_attributes = True
 
 
 class MessageResponse(BaseModel):
@@ -32,9 +32,21 @@ class MessageResponse(BaseModel):
         from_attributes = True
 
 
+class LawyerInfo(BaseModel):
+    id: int
+    name: str
+    city: str
+    region: str | None = None
+    specialties: list[str]
+    languages: str | None = None
+    hourly_rate: str
+    boosted: bool = False
+
+
 class ChatResponse(BaseModel):
     session_id: int
     user_message: str
     ai_response: str
     ready: bool = False
     recommendation: str | None = None
+    lawyers: list[LawyerInfo] | None = None

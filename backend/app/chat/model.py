@@ -1,3 +1,4 @@
+#backend/app/chat/model.py
 from app.core.database import Base
 from sqlalchemy import Column, BigInteger, String, DateTime, Enum as SAEnum, ForeignKey, Text
 from sqlalchemy.orm import relationship

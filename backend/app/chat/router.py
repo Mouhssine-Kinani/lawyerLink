@@ -1,3 +1,4 @@
+#backend/app/chat/router.py
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -71,8 +72,7 @@ def send_message(
         session_id=session_id,
         user_message=body.content,
         ai_response=result["message"],
-        ready=result["ready"],
-        recommendation=result["recommendation"]
+        lawyers=result["lawyers"]
     )
 
 @router.get("/session/{session_id}/history")
@@ -124,3 +124,16 @@ def delete_session(session_id: int, db: Session = Depends(get_db)):
     db.commit()
 
     return {"message": "Session deleted successfully"}
+
+
+@router.post("/admin/check-subscriptions")
+def check_expired_subscriptions(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("admin"))
+):
+    """
+    Admin endpoint to check and update expired subscriptions.
+    Updates status from 'active' to 'expired' for subscriptions past their end_date.
+    """
+    result = service.check_and_update_expired_subscriptions(db)
+    return result

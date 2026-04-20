@@ -10,6 +10,6 @@ email-validator
 python-jose[cryptography]
 passlib[bcrypt]
 bcrypt==3.2.0
-ollama
+#ollama
 alembic
 pytest
