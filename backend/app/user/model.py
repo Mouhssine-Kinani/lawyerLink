@@ -16,6 +16,8 @@ class User(Base):
     email = Column(String(255), unique=True, nullable=False)
     password_hash = Column(String(255), nullable=False)
     role = Column(SAEnum(Role), default=Role.client, nullable=False)
+    city = Column(String(255), nullable=True)
+    region = Column(String(255), nullable=True)
     image_url = Column(String(500), nullable=True)
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
 
@@ -25,12 +27,13 @@ class User(Base):
 class Client(Base):
     __tablename__ = "clients"
     user_id = Column(BigInteger, ForeignKey("users.id"), primary_key=True)
-    full_name = Column(String(255), nullable=True)
-    phone = Column(String(50), nullable=True)
-    image_url = Column(String(500), nullable=True)
+    first_name = Column(String(255), nullable=False)
+    last_name = Column(String(255), nullable=False)
+    phone = Column(String(50), nullable=False)
 
     user = relationship("User", back_populates="client_profile")
     chat_sessions = relationship("ChatSession", back_populates="client")
     recommendations = relationship("RecommendationLog", back_populates="client")
     reservations = relationship("Reservation", back_populates="client")
     reviews = relationship("Review", back_populates="client")
+    

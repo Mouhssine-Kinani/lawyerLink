@@ -2,6 +2,8 @@ from fastapi import APIRouter,Depends,HTTPException,status
 from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.security import hash_password,verify_password,create_access_token
+from app.core.dependencies import security
+from app.core.blacklist import TokenBlacklist
 from app.auth.schema import RegisterRequest,LoginRequest,TokenResponse
 from app.user.model import User,Client,Role
 from app.lawyer.model import Lawyer
@@ -28,18 +30,16 @@ def register(request:RegisterRequest,db:Session = Depends(get_db)):
     if request.role == "client":
         client = Client(
             user_id=user.id,
-            full_name=request.full_name,
+            first_name=request.first_name,
+            last_name=request.last_name,
             phone=request.phone
         )
         db.add(client)
     elif request.role == "lawyer":
-        name_parts = request.full_name.split()
-        first_name = name_parts[0] if name_parts else ""
-        last_name = " ".join(name_parts[1:]) if len(name_parts) > 1 else ""
         lawyer = Lawyer(
-            user_id = user.id,
-            first_name = first_name,
-            last_name = last_name
+            user_id=user.id,
+            first_name=request.first_name,
+            last_name=request.last_name
         )
         db.add(lawyer)
     else:
@@ -68,5 +68,10 @@ def login(request:LoginRequest,db:Session = Depends(get_db)):
     #return token: 
     return TokenResponse(access_token=access_token)
 
-
-
+@router.post("/logout")
+def logout(credentials: HTTPAuthorizationCredentials = Depends(security),db: Session = Depends(get_db)):
+    token = credentials.credentials
+    if TokenBlacklist.black_list(token,db):
+        return {"message":"successfuly logged out"}
+    else:
+        return {"message":"Successfuly logged out"}

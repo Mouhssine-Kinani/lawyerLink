@@ -4,13 +4,17 @@ import io
 from fastapi import UploadFile, HTTPException
 from PIL import Image
 
-UPLOAD_DIR = "uploads/profiles"
 ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"]
 MAX_SIZE_MB = 2
-MAX_DIMENSION = 400  # max width and height in pixels
+MAX_DIMENSION = 400
 
 
-async def save_profile_picture(file: UploadFile) -> str:
+def get_upload_dir(role: str) -> str:
+    """Returns the upload directory based on role (client/lawyer)."""
+    return f"uploads/profiles/{role}s"
+
+
+async def save_profile_picture(file: UploadFile, role: str) -> str:
     """
     Validates, resizes, and saves a profile picture.
     Returns the URL path the frontend will use to display the image.
@@ -56,15 +60,16 @@ async def save_profile_picture(file: UploadFile) -> str:
     # 7. Generate unique filename
     extension = "jpg"  # we always save as jpg after RGB conversion
     filename = f"{uuid.uuid4()}.{extension}"
-    filepath = os.path.join(UPLOAD_DIR, filename)
+    upload_dir = get_upload_dir(role)
+    filepath = os.path.join(upload_dir, filename)
 
     # 8. Save resized image to disk
-    os.makedirs(UPLOAD_DIR, exist_ok=True)
+    os.makedirs(upload_dir, exist_ok=True)
     with open(filepath, "wb") as f:
         image.save(f, format="JPEG", quality=85)
 
     # 9. Return URL path for frontend
-    return f"/uploads/profiles/{filename}"
+    return f"/uploads/profiles/{role}s/{filename}"
 
 
 def delete_profile_picture(image_url: str):

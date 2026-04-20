@@ -14,8 +14,9 @@ class Lawyer(Base):
     hourly_rate = Column(DECIMAL, nullable=True)
     rating_avg = Column(DECIMAL, nullable=True)
     rating_count = Column(Integer, default=0)
+    city = Column(String(255), nullable=True)
+    region = Column(String(255), nullable=True)
     is_active = Column(Boolean, default=True)
-    image_url = Column(String(500), nullable=True)
 
     user = relationship("User", back_populates="lawyer_profile")
     recommendations = relationship("RecommendationLog", back_populates="lawyer")
