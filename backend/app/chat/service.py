@@ -45,22 +45,33 @@ def normalize_text(text: str) -> str:
     text = unicodedata.normalize("NFKC", text)
     return text
 
-
 def detect_language_from_first_message(session_id: int, db: Session) -> str:
-    first_msg = (
+    # Fetch the first 5 client messages — short openers like "hello" are unreliable
+    early_msgs = (
         db.query(ChatMessage.content)
         .filter(
             ChatMessage.session_id == session_id,
             ChatMessage.sender == "client"
         )
         .order_by(ChatMessage.created_at.asc())
-        .first()
+        .limit(5)
+        .all()
     )
 
-    if not first_msg or not first_msg[0]:
+    if not early_msgs:
         return "english"
 
-    text = normalize_text(first_msg[0])
+    # Pick the most word-rich message (most signal)
+    best_text = max(
+        (normalize_text(row[0]) for row in early_msgs if row[0]),
+        key=lambda t: len(t.split()),
+        default=""
+    )
+
+    if not best_text:
+        return "english"
+
+    text = best_text
 
     # ---- Arabic ----
     if ARABIC_REGEX.search(text):
