@@ -2,9 +2,15 @@
 import json
 import re
 import ollama
+import unicodedata
+
 from datetime import datetime, timezone
+
+#db
 from sqlalchemy.orm import Session
 from sqlalchemy import case
+
+#models
 from app.chat.model import ChatMessage
 from app.chat.cache import get_cached_specialties, get_cached_cities
 from app.chat.config import MODEL, MAX_HISTORY_MESSAGES, SYSTEM_PROMPT
@@ -17,38 +23,67 @@ from app.payment.model import Subscription, BoostPayment, SubscriptionStatus
 # Language detection helper
 # ─────────────────────────────────────────────────────────────
 
-def detect_language_from_first_message(session_id: int, db: Session) -> str:
-    """
-    Returns 'arabic', 'french', or 'english' based on the very first
-    client message in the session. This is injected into the system prompt
-    so the model never second-guesses itself.
-    """
-    first_msg = db.query(ChatMessage).filter(
-        ChatMessage.session_id == session_id,
-        ChatMessage.sender == "client"
-    ).order_by(ChatMessage.created_at.asc()).first()
+ARABIC_REGEX = re.compile(r'[\u0600-\u06FF]')
+FRENCH_ACCENTS_REGEX = re.compile(r'[éèêàâçîôûëïü]', re.IGNORECASE)
 
-    if not first_msg:
+# Use word boundaries to avoid matching inside words
+FRENCH_WORDS_REGEX = re.compile(
+    r'\b(je|j\'ai|mon|ma|mes|un|une|le|la|les|des|avec|pour|'
+    r'besoin|avocat|aide|probleme|problème|affaire|contrat|divorce)\b',
+    re.IGNORECASE
+)
+
+
+def normalize_text(text: str) -> str:
+    """
+    Normalize text:
+    - strip spaces
+    - lowercase
+    - normalize unicode (important for accents)
+    """
+    text = text.strip().lower()
+    text = unicodedata.normalize("NFKC", text)
+    return text
+
+
+def detect_language_from_first_message(session_id: int, db: Session) -> str:
+    first_msg = (
+        db.query(ChatMessage.content)
+        .filter(
+            ChatMessage.session_id == session_id,
+            ChatMessage.sender == "client"
+        )
+        .order_by(ChatMessage.created_at.asc())
+        .first()
+    )
+
+    if not first_msg or not first_msg[0]:
         return "english"
 
-    text = first_msg.content
+    text = normalize_text(first_msg[0])
 
-    # Simple heuristic: check for Arabic unicode block
-    if re.search(r'[\u0600-\u06FF]', text):
+    # ---- Arabic ----
+    if ARABIC_REGEX.search(text):
         return "arabic"
 
-    # French keywords / accents
-    french_indicators = ['je', 'j\'ai', 'mon', 'ma', 'une', 'un', 'le', 'la', 'les',
-                         'avec', 'pour', 'besoin', 'avocat', 'aide', 'problème',
-                         'probleme', 'affaire', 'contrat', 'divorce']
-    lower = text.lower()
-    if any(word in lower.split() for word in french_indicators) or \
-       any(c in text for c in ['é', 'è', 'ê', 'à', 'â', 'ç', 'î', 'ô', 'û']):
+    # ---- French scoring ----
+    french_score = 0
+
+    if FRENCH_ACCENTS_REGEX.search(text):
+        french_score += 2
+
+    if FRENCH_WORDS_REGEX.search(text):
+        french_score += 1
+
+    if re.search(r'\b(qu|est|pas|dans|sur)\b', text):
+        french_score += 1
+
+    word_count = len(text.split())
+
+    if (word_count <= 3 and french_score >= 1) or (word_count > 3 and french_score >= 2):
         return "french"
 
     return "english"
-
-
 # ─────────────────────────────────────────────────────────────
 # Specialty extraction
 # ─────────────────────────────────────────────────────────────
