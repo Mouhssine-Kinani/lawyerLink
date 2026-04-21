@@ -1,6 +1,34 @@
-node_modules
+# Dependencies
+node_modules/
 package-lock.json
-uploads
+
+# Python (root level)
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.env
+*.db
+*.sqlite
+
+# Uploads
+uploads/
+
+# Generated structure files (DO NOT COMMIT)
 backend_structure.txt
 frontend_structure.txt
 export_project_structure.py
+
+# Windows
+*.lnk
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
