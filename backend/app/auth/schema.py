@@ -39,3 +39,17 @@ class UserResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+# reset password classes:
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str = Field(..., min_length=6) #... mean required 
+
+
+class ResetPasswordVerifyResponse(BaseModel):
+    valid: bool
+    email: Optional[str] = None #this mean that it can either be a strign or None

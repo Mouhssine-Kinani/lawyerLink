@@ -7,6 +7,10 @@ from app.core.blacklist import TokenBlacklist
 from app.auth.schema import RegisterRequest,LoginRequest,TokenResponse
 from app.user.model import User,Client,Role
 from app.lawyer.model import Lawyer
+from app.auth.password_reset import PasswordResetToken
+from app.user.model import User
+from app.auth.schema import ForgotPasswordRequest, ResetPasswordRequest, ResetPasswordVerifyResponse
+
 
 router = APIRouter(prefix="/auth",tags=["Authentication"])
 
@@ -75,3 +79,76 @@ def logout(credentials: HTTPAuthorizationCredentials = Depends(security),db: Ses
         return {"message":"successfuly logged out"}
     else:
         return {"message":"Successfuly logged out"}
+    
+@router.post("/forgot-password")
+def forgot_password(
+    request: ForgotPasswordRequest,
+    db: Session = Depends(get_db)
+):
+    #in developement we will be receiving the reset token directly but in production we will be sending a url
+    user = db.query(User).filter(User.email == request.email).first()
+    
+    # For security, always return success even if email doesn't exist
+    # (prevents email enumeration attacks)
+    if not user:
+        return {
+            "message": "If an account with that email exists, you will receive a password reset link.",
+            "reset_token": None  # No token in production
+        }
+    
+    # Create reset token
+    raw_token, token_obj = PasswordResetToken.create_for_user(user.id, db)
+    
+    # we can remove this and send an actual email un production
+    reset_url = f"http://localhost:5173/reset-password?token={raw_token}"
+    
+    return {
+        "message": "Password reset link has been sent to your email.",
+        "reset_token": raw_token,  # REMOVE in production!
+        "reset_url": reset_url      # REMOVE in production!
+    }
+
+@router.get("/reset-password/verify", response_model=ResetPasswordVerifyResponse)
+def verify_reset_token(token: str,db: Session = Depends(get_db)):
+    # verify if token is valid
+    try:
+        reset_token = PasswordResetToken.verify_token(token, db)
+        user = db.query(User).filter(User.id == reset_token.user_id).first()
+        return ResetPasswordVerifyResponse(
+            valid=True,
+            email=user.email if user else None
+        )
+    except ValueError as e:
+        return ResetPasswordVerifyResponse(valid=False, email=None)
+
+
+@router.post("/reset-password")
+def reset_password(
+    request: ResetPasswordRequest,
+    db: Session = Depends(get_db)
+):
+    #reset password with a valid token
+    try:
+        # Verify token
+        reset_token = PasswordResetToken.verify_token(request.token, db)
+        
+        # Get user
+        user = db.query(User).filter(User.id == reset_token.user_id).first()
+        if not user:
+            raise ValueError("User not found")
+        
+        # Update password
+        user.password_hash = hash_password(request.new_password)
+        
+        # Mark token as used
+        PasswordResetToken.mark_used(reset_token, db)
+        
+        db.commit()
+        
+        return {"message": "Password has been reset successfully. You can now login with your new password."}
+        
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
