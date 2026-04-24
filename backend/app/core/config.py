@@ -10,7 +10,8 @@ class Settings():
     SECRET_KEY:str = os.getenv("SECRET_KEY")
     ALGORITHM:str = os.getenv("ALGORITHM","HS256")
     ACCESS_TOKEN_EXPIRE_MINUTES:int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES",60))
-    AI_API_KEY:str = os.getenv("AI_API_KEY","")
+    GEMINI_API_KEY:str = os.getenv("GEMINI_API_KEY","")
+    MODEL:str = os.getenv("MODEL")
     ALLOWED_ORIGINS:str = os.getenv("ALLOWED_ORIGINS","http://localhost:5173")
     # upload
     UPLOAD_DIR:str = "uploads/profiles"
@@ -23,6 +24,6 @@ if not settings.DATABASE_URL:
     raise ValueError("DATABASE_URL not set in .env files")
 if not settings.SECRET_KEY:
     raise ValueError("SECRET_KEY not set in .env files")
-if not settings.AI_API_KEY:
-    raise ValueError("AI_API_KEY not set in .env files")
+if not settings.GEMINI_API_KEY:
+    raise ValueError("GEMINI_API_KEY not set in .env files")
 

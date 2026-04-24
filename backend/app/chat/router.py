@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.chat.model import ChatSession, ChatMessage
 from app.chat.schema import MessageCreate, ChatResponse, SessionResponse
-from app.chat import service
+from app.chat import ai_service as service
 from app.recommendation import router as recommendation_router
 
 
@@ -57,6 +57,8 @@ def send_message(
     try:
         result = service.get_ai_response(session_id, body.content, db)
     except Exception as e:
+        import logging
+        logging.error(f"AI Service Error: {type(e).__name__}: {str(e)}")
         status_code = getattr(e, "code", None) or getattr(e, "status_code", 500)
         if status_code == 429:
             raise HTTPException(status_code=429, detail="AI quota exceeded. Please try again in a few moments.")
