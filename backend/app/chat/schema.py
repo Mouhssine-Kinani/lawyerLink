@@ -47,4 +47,6 @@ class ChatResponse(BaseModel):
     session_id: int
     user_message: str
     ai_response: str
+    ready: bool = False
+    recommendation: str | None = None
     lawyers: list[LawyerInfo] | None = None

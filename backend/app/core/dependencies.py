@@ -4,11 +4,16 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.security import decode_token
 from app.user.model import User
+from app.core.blacklist import TokenBlacklist
 
+# this take the token and find the header which is 'bearer' and take the string after it that is the token
 security = HTTPBearer()
 
 def get_current_user(credentials:HTTPAuthorizationCredentials = Depends(security),db:Session = Depends(get_db)):
     token = credentials.credentials
+    # verify if token is blacklisted(logged out)
+    if TokenBlacklist.is_Blacklisted(token,db):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,details="Token has been revoked, Please login again")
     try:
         payload = decode_token(token)
         user_id = payload.get("sub")
