@@ -11,7 +11,8 @@ class ReviewBase(BaseModel):
 class ReviewCreate(ReviewBase):
     lawyer_id: int
     reservation_id: Optional[int] = None
-
+    rating: int = Field(ge=1, le=5) 
+    comment: Optional[str] = None
 
 class ReviewUpdate(BaseModel):
     rating: Optional[int] = None
@@ -23,6 +24,8 @@ class ReviewResponse(ReviewBase):
     client_id: int
     lawyer_id: int
     reservation_id: Optional[int]
+    rating: int
+    comment: Optional[str]
     created_at: datetime
 
     class Config:
