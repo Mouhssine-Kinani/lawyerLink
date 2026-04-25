@@ -6,13 +6,12 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.chat.model import ChatSession, ChatMessage
 from app.chat.schema import MessageCreate, ChatResponse, SessionResponse
-from app.chat import service
+from app.chat import ai_service as service
+from app.recommendation import router as recommendation_router
 
 
-
-from app.core.dependencies import get_current_user
+from app.core.dependencies import get_current_user, require_role, get_client_session
 from app.user.model import User
-from app.core.dependencies import require_role
 
 router = APIRouter(prefix="/chat", tags=["Chat"])
 
@@ -34,10 +33,14 @@ def create_session(
 def send_message(
     session_id: int,
     body: MessageCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("client"))
 ):
-    # 1. Check session exists
-    session = db.query(ChatSession).filter(ChatSession.id == session_id).first()
+    # 1. Verify session belongs to client
+    session = db.query(ChatSession).filter(
+        ChatSession.id == session_id,
+        ChatSession.client_id == current_user.id
+    ).first()
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
 
@@ -54,6 +57,8 @@ def send_message(
     try:
         result = service.get_ai_response(session_id, body.content, db)
     except Exception as e:
+        import logging
+        logging.error(f"AI Service Error: {type(e).__name__}: {str(e)}")
         status_code = getattr(e, "code", None) or getattr(e, "status_code", 500)
         if status_code == 429:
             raise HTTPException(status_code=429, detail="AI quota exceeded. Please try again in a few moments.")
@@ -68,6 +73,14 @@ def send_message(
     db.add(ai_msg)
     db.commit()
 
+    # 5. Save recommendations if AI returned lawyers
+    if result["lawyers"]:
+        try:
+            recommendation_router.save_recommendations(session_id, result["lawyers"], db)
+        except Exception as e:
+            import logging
+            logging.warning(f"Failed to save recommendations for session {session_id}: {e}")
+
     return ChatResponse(
         session_id=session_id,
         user_message=body.content,
@@ -76,13 +89,16 @@ def send_message(
     )
 
 @router.get("/session/{session_id}/history")
-def get_history(session_id: int, db: Session = Depends(get_db)):
+def get_history(session_id: int, db: Session = Depends(get_db), current_user: User = Depends(require_role("client"))):
     """
     Returns all messages in a session.
     Used to reload the chat when the client refreshes the page.
     """
-    # Check session exists
-    session = db.query(ChatSession).filter(ChatSession.id == session_id).first()
+    # Verify session belongs to client
+    session = db.query(ChatSession).filter(
+        ChatSession.id == session_id,
+        ChatSession.client_id == current_user.id
+    ).first()
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
 
@@ -94,14 +110,17 @@ def get_history(session_id: int, db: Session = Depends(get_db)):
 
 
 @router.get("/session/{session_id}/specialty")
-def get_specialty(session_id: int, db: Session = Depends(get_db)):
+def get_specialty(session_id: int, db: Session = Depends(get_db), current_user: User = Depends(require_role("client"))):
     """
     Extracts what type of lawyer the client needs.
     Call this when the client finishes chatting
     to trigger the recommendation system.
     """
-    # Check session exists
-    session = db.query(ChatSession).filter(ChatSession.id == session_id).first()
+    # Verify session belongs to client
+    session = db.query(ChatSession).filter(
+        ChatSession.id == session_id,
+        ChatSession.client_id == current_user.id
+    ).first()
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
 
@@ -110,12 +129,16 @@ def get_specialty(session_id: int, db: Session = Depends(get_db)):
 
 
 @router.delete("/session/{session_id}")
-def delete_session(session_id: int, db: Session = Depends(get_db)):
+def delete_session(session_id: int, db: Session = Depends(get_db), current_user: User = Depends(require_role("client"))):
     """
     Deletes a session and all its messages.
     Optional — useful for cleanup.
     """
-    session = db.query(ChatSession).filter(ChatSession.id == session_id).first()
+    # Verify session belongs to client
+    session = db.query(ChatSession).filter(
+        ChatSession.id == session_id,
+        ChatSession.client_id == current_user.id
+    ).first()
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
 
