@@ -29,7 +29,7 @@
         "POST /chat/session/{session_id}/message": "Send message to AI chatbot",
         "GET /chat/session/{session_id}/history": "Get chat history",
         "GET /chat/session/{session_id}/specialty": "Get extracted legal specialty",
-        "DELETE /chat/session/{session_id}: Delete chat session",
+        "DELETE /chat/session/{session_id}": "Delete chat session",
         "POST /chat/admin/check-subscriptions": "Admin: check expired subscriptions"
       }
     },
@@ -40,21 +40,54 @@
         "GET /recommendations/client": "Get all recommendations for client"
       }
     },
+    "user_update": {
+      "status": "missing",
+      "routes": {
+        "PUT /users/me": "Update user profile (city, region)"
+      }
+    },
     "lawyer": {
       "status": "pending",
-      "routes": {}
+      "routes": {
+        "GET /lawyers": "List/search lawyers (with filters)",
+        "GET /lawyers/{lawyer_id}": "Get lawyer profile details",
+        "PUT /lawyers/me": "Update lawyer profile",
+        "GET /lawyers/me/dashboard": "Lawyer dashboard stats"
+      }
     },
     "payment": {
-      "status": "pending",
-      "routes": {}
+      "status": "done",
+      "routes": {
+        "POST /payments/subscription": "Purchase subscription",
+        "POST /payments/boost?boost_level=1-5": "Pay to boost profile",
+        "GET /payments/history": "User payment history",
+        "GET /payments/subscription/me": "Get active subscription",
+        "POST /payments/subscription/renew": "Renew subscription",
+        "POST /payments/subscription/cancel": "Cancel subscription",
+        "POST /payments/test/simulate-success": "Test: simulate payment success",
+        "POST /payments/webhook": "Stripe webhook handler"
+      }
     },
     "reservation": {
       "status": "pending",
-      "routes": {}
+      "routes": {
+        "POST /reservations": "Create booking request",
+        "GET /reservations/me": "Client's reservations",
+        "GET /reservations/lawyer/me": "Lawyer's bookings",
+        "PUT /reservations/{id}/accept": "Accept reservation",
+        "PUT /reservations/{id}/reject": "Reject reservation",
+        "PUT /reservations/{id}/complete": "Mark as completed",
+        "DELETE /reservations/{id}": "Cancel reservation"
+      }
     },
     "review": {
       "status": "pending",
-      "routes": {}
+      "routes": {
+        "POST /reviews": "Submit review after reservation",
+        "GET /reviews/lawyer/{lawyer_id}": "Get lawyer's reviews",
+        "PUT /reviews/{id}": "Update own review",
+        "DELETE /reviews/{id}": "Delete own review"
+      }
     }
   },
   "root_endpoints": {
