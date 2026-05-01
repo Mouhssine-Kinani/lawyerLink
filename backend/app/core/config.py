@@ -18,6 +18,14 @@ class Settings():
     MAX_FILE_SIZE_MB: int = 2
     MAX_IMAGE_DIMENSION: int = 400
 
+    # Stripe
+    STRIPE_SECRET_KEY:str = os.getenv("STRIPE_SECRET_KEY", "")
+    STRIPE_WEBHOOK_SECRET:str = os.getenv("STRIPE_WEBHOOK_SECRET", "")
+    STRIPE_CURRENCY:str = os.getenv("STRIPE_CURRENCY", "mad")
+
+    # Test mode - set to True for 0 MAD testing (no actual charges)
+    STRIPE_TEST_MODE:bool = os.getenv("STRIPE_TEST_MODE", "true").lower() == "true"
+
 settings = Settings()
 
 if not settings.DATABASE_URL:
