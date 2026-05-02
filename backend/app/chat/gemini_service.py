@@ -16,7 +16,7 @@ from app.payment.model import Subscription, BoostPayment, SubscriptionStatus
 from app.core.config import settings
 
 
-client = genai.Client(api_key=settings.GEMINI_API_KEY)
+# client = genai.Client(api_key=settings.GEMINI_API_KEY)
 # GEMINI_MODEL = "gemini-2.0-flash"
 GEMINI_MODEL = "gemma-3-27b-it"
 
