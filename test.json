@@ -1,87 +1,97 @@
 {
-  "project_name": "LawyerLink",
-  "modules": [
-    {
-      "category": "Authentication & User Management",
-      "features": [
-        { "name": "Register/Login with JWT", "status": "Complete" },
-        { "name": "Logout with token blacklist", "status": "Complete" },
-        { "name": "Password reset", "status": "Complete" },
-        { "name": "Account deletion with cascade", "status": "Complete" },
-        { "name": "Profile management", "status": "Complete" },
-        { "name": "Role-based access", "status": "Complete", "roles": ["client", "lawyer", "admin"] }
-      ]
+  "project": "LawyerLink",
+  "description": "Legal consultation platform with AI assistance",
+  "features": {
+    "authentication": {
+      "status": "done",
+      "routes": {
+        "POST /auth/register": "Register new user (client or lawyer)",
+        "POST /auth/login": "Login and get JWT token",
+        "POST /auth/logout": "Logout (blacklist token)",
+        "POST /auth/forgot-password": "Request password reset",
+        "GET /auth/reset-password/verify": "Verify reset token validity",
+        "POST /auth/reset-password": "Reset password with token"
+      }
     },
-    {
-      "category": "Chatbot & AI",
-      "features": [
-        { "name": "Chat sessions", "engine": "Ollama", "models": ["qwen3.5:2b", "llama3.1:8b"], "status": "Complete" },
-        { "name": "Legal intake assistant", "status": "Complete" },
-        { "name": "Language detection", "languages": ["Arabic", "French", "English"], "status": "Complete" },
-        { "name": "Specialty extraction", "status": "Complete" },
-        { "name": "Location extraction", "status": "Complete" }
-      ]
+    "user": {
+      "status": "done",
+      "routes": {
+        "GET /users/me": "Get current user profile",
+        "POST /users/me/image": "Upload profile picture",
+        "DELETE /users/me/image": "Delete profile picture",
+        "DELETE /users/me": "Delete user account"
+      }
     },
-    {
-      "category": "Lawyer Search & Recommendations",
-      "features": [
-        { "name": "AI-powered lawyer matching", "status": "In Progress" },
-        { "name": "Search filters", "criteria": ["specialty", "city", "region"], "status": "Pending" },
-        { "name": "Lawyer profiles", "status": "Pending" },
-        { "name": "Boosted priority", "status": "Pending" },
-        { "name": "Active subscription filtering", "status": "Pending" }
-      ]
+    "chat": {
+      "status": "done",
+      "routes": {
+        "POST /chat/session": "Create new AI chat session",
+        "POST /chat/session/{session_id}/message": "Send message to AI chatbot",
+        "GET /chat/session/{session_id}/history": "Get chat history",
+        "GET /chat/session/{session_id}/specialty": "Get extracted legal specialty",
+        "DELETE /chat/session/{session_id}": "Delete chat session",
+        "POST /chat/admin/check-subscriptions": "Admin: check expired subscriptions"
+      }
     },
-    {
-      "category": "Reservation System",
-      "status": "Current Focus",
-      "features": [
-        { "name": "Create reservation", "status": "Not built" },
-        { "name": "Time slot management", "status": "Not built" },
-        { "name": "Accept/Reject reservation", "status": "Not built" },
-        { "name": "Mark as completed", "status": "Not built" },
-        { "name": "Cancel reservation", "status": "Not built" },
-        { "name": "Reservation history", "status": "Not built" }
-      ]
+    "recommendation": {
+      "status": "done",
+      "routes": {
+        "GET /recommendations/session/{session_id}": "Get lawyer recommendations for session",
+        "GET /recommendations/client": "Get all recommendations for client"
+      }
     },
-    {
-      "category": "Review & Rating System",
-      "features": [
-        { "name": "Leave review", "status": "Not built" },
-        { "name": "View reviews", "status": "Not built" },
-        { "name": "Average rating calculation", "status": "Not built" },
-        { "name": "Review moderation", "status": "Not built" }
-      ]
+    "user_update": {
+      "status": "missing",
+      "routes": {
+        "PUT /users/me": "Update user profile (city, region)"
+      }
     },
-    {
-      "category": "Payment & Subscription",
-      "features": [
-        { "name": "Lawyer subscription", "status": "Not built" },
-        { "name": "Boost payments", "status": "Not built" },
-        { "name": "Stripe integration", "status": "Not built" },
-        { "name": "Payment webhooks", "status": "Not built" }
-      ],
-      "models_ready": ["Subscription", "BoostPayment", "PaymentTransaction"]
+    "lawyer": {
+      "status": "pending",
+      "routes": {
+        "GET /lawyers": "List/search lawyers (with filters)",
+        "GET /lawyers/{lawyer_id}": "Get lawyer profile details",
+        "PUT /lawyers/me": "Update lawyer profile",
+        "GET /lawyers/me/dashboard": "Lawyer dashboard stats"
+      }
     },
-    {
-      "category": "Infrastructure Status",
-      "empty_routers": [
-        "app/lawyer/router.py",
-        "app/payment/router.py",
-        "app/reservation/router.py",
-        "app/review/router.py",
-        "app/recommendation/router.py"
-      ]
+    "payment": {
+      "status": "done",
+      "routes": {
+        "POST /payments/subscription": "Purchase subscription",
+        "POST /payments/boost?boost_level=1-5": "Pay to boost profile",
+        "GET /payments/history": "User payment history",
+        "GET /payments/subscription/me": "Get active subscription",
+        "POST /payments/subscription/renew": "Renew subscription",
+        "POST /payments/subscription/cancel": "Cancel subscription",
+        "POST /payments/test/simulate-success": "Test: simulate payment success",
+        "POST /payments/webhook": "Stripe webhook handler"
+      }
+    },
+    "reservation": {
+      "status": "pending",
+      "routes": {
+        "POST /reservations": "Create booking request",
+        "GET /reservations/me": "Client's reservations",
+        "GET /reservations/lawyer/me": "Lawyer's bookings",
+        "PUT /reservations/{id}/accept": "Accept reservation",
+        "PUT /reservations/{id}/reject": "Reject reservation",
+        "PUT /reservations/{id}/complete": "Mark as completed",
+        "DELETE /reservations/{id}": "Cancel reservation"
+      }
+    },
+    "review": {
+      "status": "pending",
+      "routes": {
+        "POST /reviews": "Submit review after reservation",
+        "GET /reviews/lawyer/{lawyer_id}": "Get lawyer's reviews",
+        "PUT /reviews/{id}": "Update own review",
+        "DELETE /reviews/{id}": "Delete own review"
+      }
     }
-  ],
-  "priority_queue": [
-    "Reservation System",
-    "Review & Rating System",
-    "Payment & Subscriptions",
-    "Admin Panel",
-    "Notifications",
-    "Client Dashboard",
-    "Lawyer Analytics",
-    "Public Directory"
-  ]
+  },
+  "root_endpoints": {
+    "GET /": "Root health check",
+    "GET /health": "Health check"
+  }
 }
