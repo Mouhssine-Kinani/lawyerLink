@@ -4,7 +4,7 @@ from app.core.database import get_db
 from app.core.dependencies import get_current_user
 from app.core.upload import save_profile_picture, delete_profile_picture
 from app.user.model import User
-from app.user.schema import UserResponse
+from app.user.schema import UserResponse, UserFullResponse, ClientResponse, LawyerResponse
 
 from app.core.blacklist import TokenBlacklist
 from app.chat.model import ChatSession, ChatMessage
@@ -20,19 +20,50 @@ from app.lawyer.model import Lawyer
 router = APIRouter(prefix="/users", tags=["Users"])
 
 # profile routes:
-@router.get("/me", response_model=UserResponse)
+@router.get("/me", response_model=UserFullResponse)
 def get_current_user_profile(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    return UserResponse(
+    db.refresh(current_user, ['client_profile', 'lawyer_profile'])
+    
+    client_data = None
+    lawyer_data = None
+    
+    if current_user.role.value == "client" and current_user.client_profile:
+        client_data = ClientResponse(
+            first_name=current_user.client_profile.first_name,
+            last_name=current_user.client_profile.last_name,
+            phone=current_user.client_profile.phone,
+            user_id=current_user.client_profile.user_id
+        )
+    elif current_user.role.value == "lawyer" and current_user.lawyer_profile:
+        lawyer_data = LawyerResponse(
+            first_name=current_user.lawyer_profile.first_name,
+            last_name=current_user.lawyer_profile.last_name,
+            firm=current_user.lawyer_profile.firm,
+            license_number=current_user.lawyer_profile.license_number,
+            specialties=current_user.lawyer_profile.specialties,
+            languages=current_user.lawyer_profile.languages,
+            hourly_rate=float(current_user.lawyer_profile.hourly_rate) if current_user.lawyer_profile.hourly_rate else None,
+            rating_avg=float(current_user.lawyer_profile.rating_avg) if current_user.lawyer_profile.rating_avg else None,
+            rating_count=current_user.lawyer_profile.rating_count,
+            city=current_user.lawyer_profile.city,
+            region=current_user.lawyer_profile.region,
+            is_active=current_user.lawyer_profile.is_active,
+            user_id=current_user.lawyer_profile.user_id
+        )
+    
+    return UserFullResponse(
         id=current_user.id,
         email=current_user.email,
         role=current_user.role.value,
         city=current_user.city,
         region=current_user.region,
         image_url=current_user.image_url,
-        created_at=current_user.created_at
+        created_at=current_user.created_at,
+        client_profile=client_data,
+        lawyer_profile=lawyer_data
     )
 
 
