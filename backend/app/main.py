@@ -51,7 +51,6 @@ app.include_router(chat_router.router)
 app.include_router(reservation_router.router)
 app.include_router(recommendation_router.router)
 app.include_router(payment_router.router)
-
 app.include_router(review_router.router)
 
 @app.get("/")
