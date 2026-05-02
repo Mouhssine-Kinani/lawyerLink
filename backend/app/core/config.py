@@ -24,6 +24,6 @@ if not settings.DATABASE_URL:
     raise ValueError("DATABASE_URL not set in .env files")
 if not settings.SECRET_KEY:
     raise ValueError("SECRET_KEY not set in .env files")
-if not settings.GEMINI_API_KEY:
-    raise ValueError("GEMINI_API_KEY not set in .env files")
+# if not settings.GEMINI_API_KEY:
+#     raise ValueError("GEMINI_API_KEY not set in .env files")
 
