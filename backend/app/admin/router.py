@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query 
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from typing import Optional, List
 from datetime import datetime, timedelta
 
@@ -23,7 +24,7 @@ admin_required = Depends(require_role("admin"))
 # DASHBOARD STATS
 # ──────────────────────────────────────────────────────────────
 @router.get("/dashboard",response_model=DashboardStats)
-def get_dashboard_stats(current_user:User = Depends(require_role("admin")) ,db:Session = Depends(get_db())):
+def get_dashboard_stats(current_user:User = Depends(require_role("admin")) ,db:Session = Depends(get_db)):
     total_users = db.query(User).count()
     total_clients = db.query(Client).count()
     total_lawyers = db.query(Lawyer).count()
@@ -33,7 +34,7 @@ def get_dashboard_stats(current_user:User = Depends(require_role("admin")) ,db:S
     completed_reservations = db.query(Reservation).filter(Reservation.status == ReservationStatus.completed).count()
 
     total_reviews = db.query(Review).count()
-    average_rating_result = db.query(db.func.avg(Lawyer.rating_avg)).filter(Lawyer.rating_count > 0).first()
+    average_rating_result = db.query(func.avg(Lawyer.rating_avg)).filter(Lawyer.rating_count > 0).first()
     avg_rating = float(average_rating_result[0]) if average_rating_result[0] else None
 
     return DashboardStats(
@@ -76,12 +77,15 @@ def get_user_by_id(user_id:int,current_user:User = Depends(require_role("admin")
 
 @router.post("/users",status_code=201)
 def create_user(data:CreateUserRequest,current_user:User = Depends(require_role("admin")),db:Session = Depends(get_db)):
-    users = db.query(User).filter(User.id == current_user.id).first()
+    if data.role == "admin":
+        raise HTTPException(403,"Cannot create admin accounts through this endpoint")
+    
+    users = db.query(User).filter(User.email == data.email).first()
     if users:
         raise HTTPException(404,f"User with ID {current_user.id} already exist")
     user = User(
         email = data.email,
-        password_hash = data.password,
+        password_hash = hash_password(data.password),
         role = Role(data.role),
     )
     db.add(user)
@@ -112,31 +116,39 @@ def create_user(data:CreateUserRequest,current_user:User = Depends(require_role(
     }
 
 @router.patch("/users/{user_id}")
-def update_user(user_id:int ,data:UpdateUserRequest,current_user:User = Depends(require_role("admin")),db:Session = Depends(get_db)):
+def update_user(
+    user_id: int,
+    data: UpdateUserRequest,
+    current_user: User = Depends(require_role("admin")),
+    db: Session = Depends(get_db)
+):
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
-        raise HTTPException(404,f"User with ID {user_id} is not found")
-    if user.id == current_user.id:
-        raise HTTPException(400,"you cannot change your own role")
-    # update fields
+        raise HTTPException(404, f"User with ID {user_id} not found")
+    
+    # Block role changes 
+    if data.role is not None and data.role != user.role.value:
+        raise HTTPException(400, "Role changes are not allowed via API. Use database directly or create a new user.")
+    
+    # Update email if provided
     if data.email is not None:
         existing = db.query(User).filter(
             User.email == data.email,
             User.id != user_id
-        )
+        ).first()
         if existing:
-            raise HTTPException(400,f"Email {data.email} already taken")
+            raise HTTPException(400, f"Email {data.email} already taken")
         user.email = data.email
-    if data.role is not None:
-        user.role = Role(data.role)
+    
+    # Update city/region if provided
     if data.city is not None:
         user.city = data.city
     if data.region is not None:
         user.region = data.region
     
     db.commit()
-
-    return{
+    
+    return {
         "message": f"User {user_id} updated successfully",
         "user_id": user.id,
         "email": user.email,
@@ -144,7 +156,7 @@ def update_user(user_id:int ,data:UpdateUserRequest,current_user:User = Depends(
     }
 
 @router.delete("/users/{user_id}")
-def delete_user(user_id:int,permanent:bool = Query(false,description="Permanent delete(cascade deletion)"),db:Session = Depends(get_db)):
+def delete_user(user_id:int,current_user:User = Depends(require_role("admin")),permanent:bool = Query(False,description="Permanent delete(cascade deletion)"),db:Session = Depends(get_db)):
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(404,f"User with ID {user_id} not found")
@@ -172,15 +184,74 @@ def get_all_reservations(
     current_user: User = Depends(require_role("admin")),
     db: Session = Depends(get_db)
 ):
-    query = db.query(Reservations)
+    query = db.query(Reservation)
     if status:
         valid_status = ["accepted","completed","pending","rejected","cancelled"]
         if status not in valid_status:
-            raise HTTPException(400, f"Invalid status. Must be one of: {valid_statuses}")
+            raise HTTPException(400, f"Invalid status. Must be one of: {valid_status}")
         query = query.filter(Reservation.status == status)
 
-    reservations = query.order_by(Reservation.created_at).desc().limit(limit).all()
+    reservations = query.order_by(Reservation.created_at.desc()).limit(limit).all()
     return reservations
     
     
+# ──────────────────────────────────────────────────────────────
+# LAWYER MANAGEMENT
+# ──────────────────────────────────────────────────────────────
+@router.get("/lawyers", response_model=List[AdminLawyerResponse])
+def get_all_lawyers(
+    is_active: Optional[bool] = Query(None, description="Filter by active status"),
+    limit: int = Query(100, ge=1, le=500),
+    current_user: User = Depends(require_role("admin")),
+    db: Session = Depends(get_db)
+):
     
+    query = db.query(Lawyer,User).join(User,User.id == Lawyer.user_id)
+    if is_active is not None:
+        query = query.filter(Lawyer.is_active == is_active)
+    
+    results = query.limit(limit).all()
+    
+    today = datetime.now().date()
+    lawyers = []
+    
+    for lawyer, user in results:
+        # Check if lawyer has active subscription
+        subscription = db.query(Subscription).filter(
+            Subscription.lawyer_id == lawyer.user_id,
+            Subscription.status == SubscriptionStatus.active,
+            Subscription.start_date <= today,
+            Subscription.end_date >= today
+        ).first()
+        
+        lawyers.append(AdminLawyerResponse(
+            user_id=lawyer.user_id,
+            email=user.email,
+            first_name=lawyer.first_name,
+            last_name=lawyer.last_name,
+            firm=lawyer.firm,
+            specialties=lawyer.specialties,
+            is_active=lawyer.is_active,
+            rating_avg=float(lawyer.rating_avg) if lawyer.rating_avg else None,
+            rating_count=lawyer.rating_count,
+            subscription_status=subscription.status.value if subscription else "inactive"
+        ))
+    
+    return lawyers
+
+@router.patch("/lawyers/{lawyer_id}/toggle-active")
+def toggle_lawyer_active(
+    lawyer_id: int,
+    is_active: bool = True,
+    current_user: User = Depends(require_role("admin")),
+    db: Session = Depends(get_db)
+):
+    lawyer = db.query(Lawyer).filter(Lawyer.user_id == lawyer_id).first()
+    if not lawyer:
+        raise HTTPException(404, f"Lawyer with ID {lawyer_id} not found")
+    
+    lawyer.is_active = is_active
+    db.commit()
+    
+    status = "activated" if is_active else "deactivated"
+    return {"message": f"Lawyer {lawyer_id} {status}"}

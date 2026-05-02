@@ -32,7 +32,7 @@ class AdminUserResponse(BaseModel):
     id: int
     email: str
     role: str
-    is_active: bool
+    # is_active: bool
     city: Optional[str]
     region: Optional[str]
     created_at: datetime
