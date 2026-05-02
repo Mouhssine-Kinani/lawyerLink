@@ -2,6 +2,7 @@
 from app.core.database import Base
 from sqlalchemy import Column, BigInteger, Integer, DateTime, Date, Enum as SAEnum, ForeignKey, DECIMAL
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
 from enum import Enum
 
 class SubscriptionStatus(str, Enum):
@@ -50,6 +51,7 @@ class PaymentTransaction(Base):
     amount = Column(DECIMAL, nullable=False)
     type = Column(SAEnum(PaymentType), nullable=False)
     status = Column(SAEnum(PaymentStatus), default=PaymentStatus.pending, nullable=False)
+    created_at = Column(DateTime, server_default=func.now(), nullable=False)
 
     subscription = relationship("Subscription", back_populates="payment_transaction")
     boost_payment = relationship("BoostPayment", back_populates="payment_transaction")

@@ -12,6 +12,7 @@ from app.reservation import router as reservation_router
 from app.recommendation import router as recommendation_router
 from app.payment import router as payment_router
 from app.review import router as review_router
+from app.lawyer import router as lawyer_router
 
 
 #models
@@ -52,11 +53,8 @@ app.include_router(reservation_router.router)
 app.include_router(recommendation_router.router)
 app.include_router(payment_router.router)
 app.include_router(review_router.router)
+app.include_router(lawyer_router.router)
 
 @app.get("/")
 def index():
     return {"message": "nice"}
-
-@app.get("/health")
-def health_check():
-    return {"status": "healthy"}

@@ -40,58 +40,56 @@
         "GET /recommendations/client": "Get all recommendations for client"
       }
     },
-    "user_update": {
-      "status": "missing",
-      "routes": {
-        "PUT /users/me": "Update user profile (city, region)"
-      }
-    },
     "lawyer": {
-      "status": "pending",
+      "status": "done",
       "routes": {
-        "GET /lawyers": "List/search lawyers (with filters)",
-        "GET /lawyers/{lawyer_id}": "Get lawyer profile details",
-        "PUT /lawyers/me": "Update lawyer profile",
-        "GET /lawyers/me/dashboard": "Lawyer dashboard stats"
+        "GET /lawyer/me/reviews": "Get lawyer's own reviews",
+        "GET /lawyer/me/reservations": "Get lawyer's appointments (query: status, date_from, date_to, limit)",
+        "PATCH /lawyer/me/reservations/{reservation_id}": "Update reservation status (accept/reject/complete/cancel) or date/notes",
+        "GET /lawyer/me/payments/history": "Get lawyer's payment history (query: date_from, date_to, payment_type)"
       }
     },
     "payment": {
       "status": "done",
       "routes": {
-        "POST /payments/subscription": "Purchase subscription",
-        "POST /payments/boost?boost_level=1-5": "Pay to boost profile",
-        "GET /payments/history": "User payment history",
-        "GET /payments/subscription/me": "Get active subscription",
-        "POST /payments/subscription/renew": "Renew subscription",
+        "POST /payments/subscription": "Create subscription payment intent",
+        "POST /payments/boost": "Create boost payment intent (query param: boost_level=1-5)",
+        "GET /payments/history": "Lawyer payment history",
+        "GET /payments/subscription/me": "Get active subscription status",
+        "POST /payments/subscription/renew": "Renew subscription (create payment intent)",
         "POST /payments/subscription/cancel": "Cancel subscription",
-        "POST /payments/test/simulate-success": "Test: simulate payment success",
+        "POST /payments/test/simulate-success": "Test: simulate payment success (query params: transaction_id, payment_type)",
         "POST /payments/webhook": "Stripe webhook handler"
       }
     },
     "reservation": {
-      "status": "pending",
+      "status": "done",
       "routes": {
         "POST /reservations": "Create booking request",
-        "GET /reservations/me": "Client's reservations",
-        "GET /reservations/lawyer/me": "Lawyer's bookings",
-        "PUT /reservations/{id}/accept": "Accept reservation",
-        "PUT /reservations/{id}/reject": "Reject reservation",
-        "PUT /reservations/{id}/complete": "Mark as completed",
-        "DELETE /reservations/{id}": "Cancel reservation"
+        "GET /reservations": "Get reservations (filtered by role: client or lawyer, query params: status, limit)",
+        "GET /reservations/{reservation_id}": "Get single reservation",
+        "PATCH /reservations/{reservation_id}": "Update reservation status/date/notes (role-based: clients cancel, lawyers accept/reject/complete)",
+        "DELETE /reservations/{reservation_id}": "Cancel pending reservation (client only)"
       }
     },
     "review": {
-      "status": "pending",
+      "status": "done",
       "routes": {
-        "POST /reviews": "Submit review after reservation",
-        "GET /reviews/lawyer/{lawyer_id}": "Get lawyer's reviews",
-        "PUT /reviews/{id}": "Update own review",
-        "DELETE /reviews/{id}": "Delete own review"
+        "POST /reviews": "Submit review after completed reservation",
+        "GET /reviews/lawyer/{lawyer_id}": "Get lawyer's reviews (public)",
+        "GET /reviews/me": "Get current client's reviews",
+        "GET /reviews/reservation/{reservation_id}": "Get review by reservation ID",
+        "PATCH /reviews/{review_id}": "Update own review (within 7 days)",
+        "DELETE /reviews/{review_id}": "Delete own review (within 7 days)",
+        "GET /reviews/admin/all": "Admin: get all reviews"
       }
     }
   },
   "root_endpoints": {
     "GET /": "Root health check",
     "GET /health": "Health check"
+  },
+  "static_files": {
+    "/uploads": "Serves uploaded profile pictures"
   }
 }

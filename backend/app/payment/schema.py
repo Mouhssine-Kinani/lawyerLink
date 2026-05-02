@@ -93,6 +93,7 @@ class PaymentTransactionResponse(PaymentTransactionBase):
     subscription_id: Optional[int]
     boost_payment_id: Optional[int]
     status: PaymentStatus
+    created_at: datetime
 
     class Config:
         from_attributes = True
