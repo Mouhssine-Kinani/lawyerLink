@@ -160,7 +160,9 @@ def cleanup_user_data(user_id: int, db: Session):
     db.query(PaymentTransaction).filter(PaymentTransaction.payer_id == user_id).delete()
     
     # 9. Finally, delete the user
-    db.query(User).filter(User.id == user_id).delete()
+    user_to_delete = db.query(User).filter(User.id == user_id).first()
+    if user_to_delete:
+        db.delete(user_to_delete)
     
     db.commit()
 
