@@ -15,3 +15,5 @@ node_modules/
 
 uploads/
 
+
+app/role_privileges.json
