@@ -4,7 +4,7 @@ from app.core.database import get_db
 from app.core.dependencies import get_current_user
 from app.core.upload import save_profile_picture, delete_profile_picture
 from app.user.model import User
-from app.user.schema import UserResponse, UserFullResponse, ClientResponse, LawyerResponse
+from app.user.schema import UserResponse, UserFullResponse, UserUpdate, ClientResponse, LawyerResponse
 
 from app.core.blacklist import TokenBlacklist
 from app.chat.model import ChatSession, ChatMessage
@@ -64,6 +64,34 @@ def get_current_user_profile(
         created_at=current_user.created_at,
         client_profile=client_data,
         lawyer_profile=lawyer_data
+    )
+
+
+@router.patch("/me", response_model=UserResponse)
+def update_current_user_profile(
+    user_update: UserUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    changed = False
+    if user_update.city is not None:
+        current_user.city = user_update.city
+        changed = True
+    if user_update.region is not None:
+        current_user.region = user_update.region
+        changed = True
+    if not changed:
+        raise HTTPException(400, "No fields to update")
+    db.commit()
+    db.refresh(current_user)
+    return UserResponse(
+        id=current_user.id,
+        email=current_user.email,
+        role=current_user.role.value,
+        city=current_user.city,
+        region=current_user.region,
+        image_url=current_user.image_url,
+        created_at=current_user.created_at
     )
 
 

@@ -69,6 +69,11 @@ class LawyerResponse(LawyerBase):
         from_attributes = True
 
 
+class UserUpdate(BaseModel):
+    city: Optional[str] = None
+    region: Optional[str] = None
+
+
 class UserFullResponse(BaseModel):
     id: int
     email: str

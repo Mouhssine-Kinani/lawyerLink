@@ -17,6 +17,7 @@
       "status": "done",
       "routes": {
         "GET /users/me": "Get current user profile",
+        "PATCH /users/me": "Update basic profile fields (city, region)",
         "POST /users/me/image": "Upload profile picture",
         "DELETE /users/me/image": "Delete profile picture",
         "DELETE /users/me": "Delete user account"
@@ -43,6 +44,7 @@
     "lawyer": {
       "status": "done",
       "routes": {
+        "PATCH /lawyer/me": "Update lawyer profile (first_name, last_name, firm, license_number, specialties, languages, hourly_rate, city, region)",
         "GET /lawyer/me/reviews": "Get lawyer's own reviews",
         "GET /lawyer/me/reservations": "Get lawyer's appointments (query: status, date_from, date_to, limit)",
         "PATCH /lawyer/me/reservations/{reservation_id}": "Update reservation status (accept/reject/complete/cancel) or date/notes",

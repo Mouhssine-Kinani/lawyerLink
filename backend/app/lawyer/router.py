@@ -7,6 +7,7 @@ from app.core.database import get_db
 from app.core.dependencies import require_role
 from app.user.model import User
 from app.lawyer.model import Lawyer
+from app.lawyer.schema import LawyerUpdate, LawyerResponse
 from app.review.model import Review
 from app.review.schema import ReviewResponse
 from app.reservation.model import Reservation, ReservationStatus
@@ -15,6 +16,72 @@ from app.payment.model import PaymentTransaction, PaymentType, PaymentStatus
 from app.user.model import Client
 
 router = APIRouter(prefix="/lawyer", tags=["Lawyer"])
+
+
+# ──────────────────────────────────────────────────────────────
+# UPDATE LAWYER PROFILE
+# ──────────────────────────────────────────────────────────────
+
+@router.patch("/me", response_model=LawyerResponse)
+def update_lawyer_profile(
+    update: LawyerUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("lawyer"))
+):
+    lawyer = db.query(Lawyer).filter(Lawyer.user_id == current_user.id).first()
+    if not lawyer:
+        raise HTTPException(404, "Lawyer profile not found")
+
+    changed = False
+    if update.first_name is not None:
+        lawyer.first_name = update.first_name
+        changed = True
+    if update.last_name is not None:
+        lawyer.last_name = update.last_name
+        changed = True
+    if update.firm is not None:
+        lawyer.firm = update.firm
+        changed = True
+    if update.license_number is not None:
+        lawyer.license_number = update.license_number
+        changed = True
+    if update.specialties is not None:
+        lawyer.specialties = update.specialties
+        changed = True
+    if update.languages is not None:
+        lawyer.languages = update.languages
+        changed = True
+    if update.hourly_rate is not None:
+        lawyer.hourly_rate = update.hourly_rate
+        changed = True
+    if update.city is not None:
+        lawyer.city = update.city
+        changed = True
+    if update.region is not None:
+        lawyer.region = update.region
+        changed = True
+
+    if not changed:
+        raise HTTPException(400, "No fields to update")
+
+    db.commit()
+    db.refresh(lawyer)
+
+    return LawyerResponse(
+        first_name=lawyer.first_name,
+        last_name=lawyer.last_name,
+        firm=lawyer.firm,
+        license_number=lawyer.license_number,
+        specialties=lawyer.specialties,
+        languages=lawyer.languages,
+        hourly_rate=float(lawyer.hourly_rate) if lawyer.hourly_rate else None,
+        rating_avg=float(lawyer.rating_avg) if lawyer.rating_avg else None,
+        rating_count=lawyer.rating_count,
+        city=lawyer.city,
+        region=lawyer.region,
+        is_active=lawyer.is_active,
+        user_id=lawyer.user_id
+    )
 
 
 # ──────────────────────────────────────────────────────────────
