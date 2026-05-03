@@ -10,7 +10,7 @@ from app.chat import ai_service as service
 from app.recommendation import router as recommendation_router
 
 
-from app.core.dependencies import get_current_user, require_role, get_client_session
+from app.core.dependencies import require_role, get_client_session
 from app.user.model import User
 
 router = APIRouter(prefix="/chat", tags=["Chat"])
