@@ -36,4 +36,8 @@ desktop.ini
 
 #other stuf
 diagram_updated.puml
-.opencode
+frontend/.opencode
+
+opencode.*
+Stitch_design
+Stitch_design/*

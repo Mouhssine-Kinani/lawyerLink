@@ -1,121 +1,112 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
-function App() {
-  const [count, setCount] = useState(0)
+// ─── Context & Guards ────────────────────────────────────────────────────────
+import { AuthProvider } from "./context/AuthContext";
+import PrivateRoute from "./components/common/PrivateRoute"; // Requires logged-in user
+import RoleRoute from "./components/common/RoleRoute";       // Requires a specific role
 
+// ─── Public Pages ────────────────────────────────────────────────────────────
+import LandingPage from "./pages/LandingPage";
+import LoginPage from "./pages/auth/LoginPage";
+import RegisterPage from "./pages/auth/RegisterPage";
+
+// ─── Client Pages ────────────────────────────────────────────────────────────
+import LawyerListPage from "./pages/client/LawyerListPage";
+import LawyerProfilePage from "./pages/client/LawyerProfilePage";
+import ChatPage from "./pages/client/ChatPage";
+import ReservationPage from "./pages/client/ReservationPage";
+import MyReservationsPage from "./pages/client/MyReservationsPage";
+import RecommendationsPage from "./pages/client/RecommendationsPage";
+import ReviewPage from "./pages/client/ReviewPage";
+
+// ─── Lawyer Pages ────────────────────────────────────────────────────────────
+import LawyerDashboardPage from "./pages/lawyer/DashboardPage";
+import LawyerMyReservationsPage from "./pages/lawyer/MyReservationsPage";
+import LawyerProfileEditPage from "./pages/lawyer/ProfileEditPage";
+import LawyerSubscriptionPage from "./pages/lawyer/SubscriptionPage";
+import LawyerBoostPage from "./pages/lawyer/BoostPage";
+
+// ─── Admin Pages ─────────────────────────────────────────────────────────────
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import UsersPage from "./pages/admin/UsersPage";
+import LawyerApprovalPage from "./pages/admin/LawyerApprovalPage";
+
+// =============================================================================
+// Route definitions
+// Each section is wrapped in the appropriate guard:
+//   • No guard      → anyone can visit
+//   • <PrivateRoute> → must be logged in (any role)
+//   • <RoleRoute>   → must be logged in AND have the specified role
+// =============================================================================
+
+export default function App() {
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <BrowserRouter>
+      {/* AuthProvider makes the current user & auth helpers available app-wide */}
+      <AuthProvider>
+        <Routes>
 
-      <div className="ticks"></div>
+          {/* ── Public ─────────────────────────────────────────────────────── */}
+          <Route path="/"         element={<LandingPage />} />
+          <Route path="/login"    element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+          {/* ── Client (any authenticated user) ────────────────────────────── */}
+          <Route path="/client/lawyers"
+            element={<PrivateRoute><LawyerListPage /></PrivateRoute>}
+          />
+          <Route path="/client/lawyers/:id"
+            element={<PrivateRoute><LawyerProfilePage /></PrivateRoute>}
+          />
+          <Route path="/client/chat"
+            element={<PrivateRoute><ChatPage /></PrivateRoute>}
+          />
+          <Route path="/client/reservations"
+            element={<PrivateRoute><MyReservationsPage /></PrivateRoute>}
+          />
+          <Route path="/client/reservations/new"
+            element={<PrivateRoute><ReservationPage /></PrivateRoute>}
+          />
+          <Route path="/client/recommendations"
+            element={<PrivateRoute><RecommendationsPage /></PrivateRoute>}
+          />
+          <Route path="/client/reviews"
+            element={<PrivateRoute><ReviewPage /></PrivateRoute>}
+          />
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+          {/* ── Lawyer (role = "lawyer") ─────────────────────────────────── */}
+          <Route path="/lawyer/dashboard"
+            element={<RoleRoute requiredRole="lawyer"><LawyerDashboardPage /></RoleRoute>}
+          />
+          <Route path="/lawyer/reservations"
+            element={<RoleRoute requiredRole="lawyer"><LawyerMyReservationsPage /></RoleRoute>}
+          />
+          <Route path="/lawyer/profile"
+            element={<RoleRoute requiredRole="lawyer"><LawyerProfileEditPage /></RoleRoute>}
+          />
+          <Route path="/lawyer/subscription"
+            element={<RoleRoute requiredRole="lawyer"><LawyerSubscriptionPage /></RoleRoute>}
+          />
+          <Route path="/lawyer/boost"
+            element={<RoleRoute requiredRole="lawyer"><LawyerBoostPage /></RoleRoute>}
+          />
+
+          {/* ── Admin (role = "admin") ───────────────────────────────────── */}
+          <Route path="/admin/dashboard"
+            element={<RoleRoute requiredRole="admin"><AdminDashboard /></RoleRoute>}
+          />
+          <Route path="/admin/users"
+            element={<RoleRoute requiredRole="admin"><UsersPage /></RoleRoute>}
+          />
+          <Route path="/admin/lawyers/approval"
+            element={<RoleRoute requiredRole="admin"><LawyerApprovalPage /></RoleRoute>}
+          />
+
+          {/* ── Fallback: redirect unknown paths to home ─────────────────── */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+
+        </Routes>
+      </AuthProvider>
+    </BrowserRouter>
+  );
 }
-
-export default App
