@@ -1,121 +1,130 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { useAuthStore } from "./store/auth.store";
+// Layouts
+import PublicLayout from './components/layout/PublicLayout'
+import DashboardLayout from './components/layout/DashboardLayout'
 
-function App() {
-  const [count, setCount] = useState(0)
+// ── Auth pages ────────────────────────────────────────────
+import LoginPage from './pages/auth/LoginPage'
+import RegisterPage from './pages/auth/RegisterPage'
 
+// ── Client pages ──────────────────────────────────────────
+import LawyerListPage from './pages/client/LawyerListPage'
+import LawyerProfilePage from './pages/client/LawyerProfilePage'
+import ReservationPage from './pages/client/ReservationPage'
+import RecommendationsPage from './pages/client/RecommendationsPage'
+import MyReservationsPage from './pages/client/MyReservationsPage'
+import ReviewPage from './pages/client/ReviewPage'
+import ChatPage from './pages/client/ChatPage'
+
+// ── Lawyer pages ──────────────────────────────────────────
+import DashboardPage from './pages/lawyer/DashboardPage'
+import ProfileEditPage from './pages/lawyer/ProfileEditPage'
+import SubscriptionPage from './pages/lawyer/SubscriptionPage'
+import BoostPage from './pages/lawyer/BoostPage'
+import LawyerReservationsPage from './pages/lawyer/MyReservationsPage'
+
+// ── Admin pages ───────────────────────────────────────────
+import AdminDashboard from './pages/admin/AdminDashboard'
+import LawyerApprovalPage from './pages/admin/LawyerApprovalPage'
+import UsersPage from './pages/admin/UsersPage'
+
+// ── Route guards ──────────────────────────────────────────
+import PrivateRoute from './components/common/PrivateRoute'
+import RoleRoute from './components/common/RoleRoute'
+
+
+// TODO: Replace with your real auth store / hook
+// const mockUser = { name: 'Alex Thompson', role: 'Premium Client' }
+
+
+export default function App() {
+  const user = useAuthStore((state) => state.user);
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <BrowserRouter>
+      <Routes>
 
-      <div className="ticks"></div>
+        {/* ─────────────────────────────────────────────────────────
+            PUBLIC routes — Navbar + Footer visible, no sidebar
+        ───────────────────────────────────────────────────────── */}
+        <Route element={<PublicLayout />}>
+          {/* Landing — currently redirects to lawyer list; swap with <HomePage /> once built */}
+          <Route index element={<Navigate to="/lawyers" replace />} />
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+          {/* Auth */}
+          <Route path="login"    element={<LoginPage />} />
+          <Route path="register" element={<RegisterPage />} />
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+          {/* Browsing lawyers (public — no login needed) */}
+          <Route path="lawyers"              element={<LawyerListPage />} />
+          <Route path="lawyers/:id"          element={<LawyerProfilePage />} />
+
+          {/* Booking flow — requires login */}
+          <Route element={<PrivateRoute />}>
+            <Route path="lawyers/:id/book"   element={<ReservationPage />} />
+            <Route path="lawyers/:id/review" element={<ReviewPage />} />
+          </Route>
+        </Route>
+
+        {/* ─────────────────────────────────────────────────────────
+            CLIENT dashboard routes — Sidebar visible, no top Navbar
+        ───────────────────────────────────────────────────────── */}
+        <Route element={<PrivateRoute />}>
+          <Route element={<RoleRoute allowedRole="client" />}>
+            <Route
+              element={<DashboardLayout user={user} />}
+              path="client"
+            >
+              <Route index element={<Navigate to="dashboard" replace />} />
+              <Route path="dashboard"      element={<div className="text-gray-700">Client Dashboard — drop your component here</div>} />
+              <Route path="chat"           element={<ChatPage />} />
+              <Route path="reservations"   element={<MyReservationsPage />} />
+              <Route path="recommendations" element={<RecommendationsPage />} />
+              {/* profile & settings — add your pages here */}
+            </Route>
+          </Route>
+        </Route>
+
+        {/* ─────────────────────────────────────────────────────────
+            LAWYER dashboard routes
+        ───────────────────────────────────────────────────────── */}
+        <Route element={<PrivateRoute />}>
+          <Route element={<RoleRoute allowedRole="lawyer" />}>
+            <Route
+              element={<DashboardLayout user={{ name: 'Lawyer Name', role: 'Attorney' }} />}
+              path="lawyer"
+            >
+              <Route index element={<Navigate to="dashboard" replace />} />
+              <Route path="dashboard"    element={<DashboardPage />} />
+              <Route path="profile/edit" element={<ProfileEditPage />} />
+              <Route path="reservations" element={<LawyerReservationsPage />} />
+              <Route path="subscription" element={<SubscriptionPage />} />
+              <Route path="boost"        element={<BoostPage />} />
+            </Route>
+          </Route>
+        </Route>
+
+        {/* ─────────────────────────────────────────────────────────
+            ADMIN dashboard routes
+        ───────────────────────────────────────────────────────── */}
+        <Route element={<PrivateRoute />}>
+          <Route element={<RoleRoute allowedRole="admin" />}>
+            <Route
+              element={<DashboardLayout user={{ name: 'Admin', role: 'Administrator' }} />}
+              path="admin"
+            >
+              <Route index element={<Navigate to="dashboard" replace />} />
+              <Route path="dashboard" element={<AdminDashboard />} />
+              <Route path="lawyers"   element={<LawyerApprovalPage />} />
+              <Route path="users"     element={<UsersPage />} />
+            </Route>
+          </Route>
+        </Route>
+
+        {/* Fallback */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+
+      </Routes>
+    </BrowserRouter>
   )
 }
-
-export default App
