@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback } from "react";
+import { useState, useCallback, createContext } from "react";
 import { authApi } from "../api/auth.api";
 
 export const AuthContext = createContext(null);
@@ -92,8 +92,4 @@ export function AuthProvider({ children }) {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
-export function useAuth() {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used inside <AuthProvider>");
-  return ctx;
-}
+

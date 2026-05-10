@@ -16,6 +16,36 @@ from app.user.model import User
 router = APIRouter(prefix="/chat", tags=["Chat"])
 
 
+@router.get("/sessions")
+def list_sessions(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("client"))
+):
+    sessions = db.query(ChatSession).filter(
+        ChatSession.client_id == current_user.id
+    ).order_by(ChatSession.created_at.desc()).all()
+
+    result = []
+    for session in sessions:
+        first_msg = db.query(ChatMessage).filter(
+            ChatMessage.session_id == session.id,
+            ChatMessage.sender == "client"
+        ).order_by(ChatMessage.created_at.asc()).first()
+
+        title = "New Chat"
+        if first_msg:
+            raw = first_msg.content.strip()
+            title = (raw[:80] + "...") if len(raw) > 80 else raw
+
+        result.append({
+            "id": session.id,
+            "title": title,
+            "created_at": session.created_at.isoformat(),
+        })
+
+    return result
+
+
 @router.post("/session", response_model=SessionResponse)
 def create_session(
     db: Session = Depends(get_db),

@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../hooks/useAuth";
 
 const navConfig = {
   admin: [
@@ -23,7 +23,7 @@ const navConfig = {
   ],
 };
 
-export default function Sidebar() {
+export default function Sidebar({ children }) {
   const { user } = useAuth();
   const role = user?.role || "client";
   const navItems = navConfig[role] || navConfig.client;
@@ -58,7 +58,7 @@ export default function Sidebar() {
         <p className="text-xs font-semibold text-outline tracking-widest pl-1">Legal Workspace</p>
       </div>
 
-      <nav className="flex-1 px-4 mt-6 space-y-2 overflow-y-auto">
+      <nav className="flex-1 px-4 mt-6 space-y-2 overflow-y-auto no-scrollbar">
         {navItems.map((item) => (
           <NavLink
             key={item.path}
@@ -75,6 +75,11 @@ export default function Sidebar() {
             <span className="text-sm">{item.label}</span>
           </NavLink>
         ))}
+        {children && (
+          <div className="pt-4 border-t border-outline-variant/20">
+            {children}
+          </div>
+        )}
       </nav>
 
       <div className="p-6 border-t border-outline-variant/20">
