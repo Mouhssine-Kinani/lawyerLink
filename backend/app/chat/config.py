@@ -95,4 +95,4 @@ MODEL = "llama3.1:8b"
 
 MAX_HISTORY_MESSAGES = 20
 
-AI_PROVIDER = "ollama"  # "ollama" or "gemini"
+AI_PROVIDER = "gemini"  # "ollama" or "gemini"
