@@ -999,3 +999,238 @@ Backend runs on `http://localhost:8000`, Frontend on `http://localhost:5173`.
 ---
 
 *End of LawyerLink Platform Documentation — 39 API endpoints, 13 database tables, 3 user roles, 22 frontend routes.*
+
+```
+lawyerLink
+├─ backend
+│  ├─ alembic
+│  │  ├─ env.py
+│  │  ├─ README
+│  │  ├─ script.py.mako
+│  │  └─ versions
+│  │     ├─ 0e4e997b95d5_add_city_and_region_to_users_and_lawyers.py
+│  │     ├─ 535a74706b71_your_change.py
+│  │     ├─ 69a8ed0c404f_remove_the_imageurl_from_client_and_.py
+│  │     ├─ 6f255ac9b794_add_created_at_to_reservations.py
+│  │     ├─ 8df2949cf265_add_location_fields.py
+│  │     └─ 9f5af3447c79_add_created_at_to_payment_transactions.py
+│  ├─ alembic.ini
+│  ├─ app
+│  │  ├─ admin
+│  │  │  ├─ router.py
+│  │  │  ├─ schema.py
+│  │  │  └─ __init__.py
+│  │  ├─ auth
+│  │  │  ├─ password_reset.py
+│  │  │  ├─ router.py
+│  │  │  ├─ schema.py
+│  │  │  └─ __init__.py
+│  │  ├─ chat
+│  │  │  ├─ ai_service.py
+│  │  │  ├─ cache.py
+│  │  │  ├─ config.py
+│  │  │  ├─ gemini_service.py
+│  │  │  ├─ model.py
+│  │  │  ├─ router.py
+│  │  │  ├─ schema.py
+│  │  │  ├─ service.py
+│  │  │  └─ __init__.py
+│  │  ├─ core
+│  │  │  ├─ blacklist.py
+│  │  │  ├─ config.py
+│  │  │  ├─ database.py
+│  │  │  ├─ dependencies.py
+│  │  │  ├─ security.py
+│  │  │  ├─ upload.py
+│  │  │  └─ __init__.py
+│  │  ├─ lawyer
+│  │  │  ├─ model.py
+│  │  │  ├─ router.py
+│  │  │  ├─ schema.py
+│  │  │  └─ __init__.py
+│  │  ├─ main.py
+│  │  ├─ payment
+│  │  │  ├─ model.py
+│  │  │  ├─ router.py
+│  │  │  ├─ schema.py
+│  │  │  ├─ service.py
+│  │  │  └─ __init__.py
+│  │  ├─ recommendation
+│  │  │  ├─ model.py
+│  │  │  ├─ router.py
+│  │  │  ├─ schema.py
+│  │  │  └─ __init__.py
+│  │  ├─ reservation
+│  │  │  ├─ model.py
+│  │  │  ├─ router.py
+│  │  │  ├─ schema.py
+│  │  │  └─ __init__.py
+│  │  ├─ review
+│  │  │  ├─ model.py
+│  │  │  ├─ router.py
+│  │  │  ├─ schema.py
+│  │  │  └─ __init__.py
+│  │  ├─ role_privileges.json
+│  │  ├─ user
+│  │  │  ├─ model.py
+│  │  │  ├─ router.py
+│  │  │  ├─ schema.py
+│  │  │  └─ __init__.py
+│  │  └─ __init__.py
+│  ├─ features.json
+│  ├─ readme.md
+│  ├─ requirements.txt
+│  └─ tests
+│     ├─ conftest.py
+│     ├─ test_auth.py
+│     ├─ test_chat.py
+│     ├─ test_lawyer.py
+│     ├─ test_payment.py
+│     ├─ test_reservation.py
+│     ├─ test_user.py
+│     └─ __init__.py
+├─ frontend
+│  ├─ dist
+│  │  ├─ assets
+│  │  │  ├─ index-D1o07QBG.css
+│  │  │  └─ index-yobSB_mD.js
+│  │  ├─ favicon.svg
+│  │  ├─ icons.svg
+│  │  └─ index.html
+│  ├─ eslint.config.js
+│  ├─ index.html
+│  ├─ package.json
+│  ├─ public
+│  │  ├─ favicon.svg
+│  │  └─ icons.svg
+│  ├─ README.md
+│  ├─ src
+│  │  ├─ api
+│  │  │  ├─ auth.api.js
+│  │  │  ├─ axios.js
+│  │  │  ├─ chat.api.js
+│  │  │  ├─ lawyer.api.js
+│  │  │  ├─ payment.api.js
+│  │  │  ├─ reservation.api.js
+│  │  │  └─ review.api.js
+│  │  ├─ App.css
+│  │  ├─ App.jsx
+│  │  ├─ assets
+│  │  │  ├─ hero.png
+│  │  │  ├─ react.svg
+│  │  │  └─ vite.svg
+│  │  ├─ components
+│  │  │  ├─ chat
+│  │  │  │  ├─ ChatInput.jsx
+│  │  │  │  ├─ ChatMessage.jsx
+│  │  │  │  └─ ChatWindow.jsx
+│  │  │  ├─ common
+│  │  │  │  ├─ FormButton.jsx
+│  │  │  │  ├─ FormInput.jsx
+│  │  │  │  ├─ LoadingSpinner.jsx
+│  │  │  │  ├─ Modal.jsx
+│  │  │  │  ├─ Pagination.jsx
+│  │  │  │  ├─ PrivateRoute.jsx
+│  │  │  │  ├─ RoleRoute.jsx
+│  │  │  │  └─ RoleSelector.jsx
+│  │  │  ├─ lawyer
+│  │  │  │  ├─ LawyerCard.jsx
+│  │  │  │  ├─ LawyerFilter.jsx
+│  │  │  │  └─ StarRating.jsx
+│  │  │  ├─ layout
+│  │  │  │  ├─ Footer.jsx
+│  │  │  │  ├─ Navbar.jsx
+│  │  │  │  └─ Sidebar.jsx
+│  │  │  ├─ payment
+│  │  │  │  └─ PaymentForm.jsx
+│  │  │  └─ reservation
+│  │  │     ├─ ReservationCard.jsx
+│  │  │     └─ StatusBadge.jsx
+│  │  ├─ context
+│  │  │  └─ AuthContext.jsx
+│  │  ├─ hooks
+│  │  │  ├─ useAuth.js
+│  │  │  ├─ useChat.js
+│  │  │  └─ useLawyers.js
+│  │  ├─ index.css
+│  │  ├─ main.jsx
+│  │  ├─ pages
+│  │  │  ├─ admin
+│  │  │  │  ├─ AdminDashboard.jsx
+│  │  │  │  ├─ LawyerApprovalPage.jsx
+│  │  │  │  └─ UsersPage.jsx
+│  │  │  ├─ auth
+│  │  │  │  ├─ LoginPage.jsx
+│  │  │  │  └─ RegisterPage.jsx
+│  │  │  ├─ client
+│  │  │  │  ├─ ChatPage.jsx
+│  │  │  │  ├─ LawyerListPage.jsx
+│  │  │  │  ├─ LawyerProfilePage.jsx
+│  │  │  │  ├─ MyReservationsPage.jsx
+│  │  │  │  ├─ RecommendationsPage.jsx
+│  │  │  │  ├─ ReservationPage.jsx
+│  │  │  │  └─ ReviewPage.jsx
+│  │  │  ├─ LandingPage.jsx
+│  │  │  └─ lawyer
+│  │  │     ├─ BoostPage.jsx
+│  │  │     ├─ DashboardPage.jsx
+│  │  │     ├─ MyReservationsPage.jsx
+│  │  │     ├─ ProfileEditPage.jsx
+│  │  │     └─ SubscriptionPage.jsx
+│  │  ├─ store
+│  │  │  ├─ auth.store.js
+│  │  │  ├─ chat.store.js
+│  │  │  └─ reservation.store.js
+│  │  └─ utils
+│  │     ├─ constants.js
+│  │     └─ formatDate.js
+│  └─ vite.config.js
+├─ package.json
+├─ rapport.md
+├─ readme.md
+├─ stitch-design
+│  ├─ admin_dashboard
+│  │  ├─ code.html
+│  │  └─ screen.png
+│  ├─ ai_legal_assistant_2
+│  │  ├─ code.html
+│  │  └─ screen.png
+│  ├─ book_consultation
+│  │  ├─ code.html
+│  │  └─ screen.png
+│  ├─ boost_visibility
+│  │  ├─ code.html
+│  │  └─ screen.png
+│  ├─ client_dashboard_2
+│  │  ├─ code.html
+│  │  └─ screen.png
+│  ├─ juris_slate
+│  │  └─ DESIGN.md
+│  ├─ landing_page_2
+│  │  ├─ code.html
+│  │  └─ screen.png
+│  ├─ lawyerlink_prd.html
+│  ├─ lawyer_dashboard
+│  │  ├─ code.html
+│  │  └─ screen.png
+│  ├─ lawyer_directory_2
+│  │  ├─ code.html
+│  │  └─ screen.png
+│  ├─ lawyer_profile
+│  │  ├─ code.html
+│  │  └─ screen.png
+│  ├─ lawyer_subscription
+│  │  ├─ code.html
+│  │  └─ screen.png
+│  ├─ messaging_panel
+│  │  ├─ code.html
+│  │  └─ screen.png
+│  ├─ notifications_hub
+│  │  ├─ code.html
+│  │  └─ screen.png
+│  └─ sign_up_login
+│     ├─ code.html
+│     └─ screen.png
+└─ test.json
+
+```
