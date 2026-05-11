@@ -10,7 +10,7 @@ from app.user.model import User, Client
 from app.lawyer.model import Lawyer
 from app.reservation.model import Reservation, ReservationStatus
 from app.review.model import Review
-from app.review.schema import ReviewCreate, ReviewUpdate, ReviewResponse
+from app.review.schema import ReviewCreate, ReviewUpdate, ReviewResponse, ReviewWithClientResponse
 
 router = APIRouter(prefix="/reviews",tags=["Reviews"])
 
@@ -69,13 +69,30 @@ def create_review(data:ReviewCreate,current_user:User = Depends(get_current_user
 # GET REVIEWS FOR A LAWYER (Public - anyone can see regardless of role)
 # ──────────────────────────────────────────────────────────────
 
-@router.get("/lawyer/{lawyer_id}",response_model=list[ReviewResponse])
+@router.get("/lawyer/{lawyer_id}",response_model=list[ReviewWithClientResponse])
 def get_lawyer_reviews(lawyer_id:int,limit:int = Query(50,ge = 1,le = 100),db:Session = Depends(get_db)):
     lawyer = db.query(Lawyer).filter(Lawyer.user_id == lawyer_id).first()
     if not lawyer:
         raise HTTPException(404,"lawyer profile not found")
     reviews = db.query(Review).filter(Review.lawyer_id == lawyer_id).order_by(Review.created_at.desc()).limit(limit).all()
-    return reviews
+
+    result = []
+    for review in reviews:
+        client = db.query(Client).filter(Client.user_id == review.client_id).first()
+        client_user = db.query(User).filter(User.id == review.client_id).first() if client else None
+        result.append(ReviewWithClientResponse(
+            id=review.id,
+            client_id=review.client_id,
+            lawyer_id=review.lawyer_id,
+            reservation_id=review.reservation_id,
+            rating=review.rating,
+            comment=review.comment,
+            created_at=review.created_at,
+            client_first_name=client.first_name if client else None,
+            client_last_name=client.last_name if client else None,
+            client_image_url=client_user.image_url if client_user else None
+        ))
+    return result
 
 # ──────────────────────────────────────────────────────────────
 # GET CURRENT CLIENT'S REVIEWS (Private)
