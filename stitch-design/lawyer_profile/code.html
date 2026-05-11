@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-secondary": "#ffffff",
+              "primary-container": "#1e3a8a",
+              "on-surface-variant": "#444651",
+              "error": "#ba1a1a",
+              "tertiary": "#3e2400",
+              "inverse-on-surface": "#eaf1ff",
+              "tertiary-fixed": "#ffddb8",
+              "on-error": "#ffffff",
+              "surface-container-high": "#dce9ff",
+              "on-secondary-container": "#fefcff",
+              "surface-tint": "#4059aa",
+              "on-primary-container": "#90a8ff",
+              "primary-fixed-dim": "#b6c4ff",
+              "on-error-container": "#93000a",
+              "background": "#f8f9ff",
+              "surface": "#f8f9ff",
+              "surface-bright": "#f8f9ff",
+              "on-tertiary-container": "#ef9900",
+              "on-primary": "#ffffff",
+              "outline": "#757682",
+              "on-tertiary-fixed": "#2a1700",
+              "on-background": "#0d1c2e",
+              "secondary-container": "#2170e4",
+              "outline-variant": "#c5c5d3",
+              "primary": "#00236f",
+              "surface-container-lowest": "#ffffff",
+              "secondary": "#0058be",
+              "on-tertiary": "#ffffff",
+              "surface-dim": "#ccdbf3",
+              "secondary-fixed-dim": "#adc6ff",
+              "on-secondary-fixed": "#001a42",
+              "on-secondary-fixed-variant": "#004395",
+              "on-primary-fixed-variant": "#264191",
+              "on-primary-fixed": "#00164e",
+              "inverse-surface": "#233144",
+              "inverse-primary": "#b6c4ff",
+              "tertiary-container": "#5c3800",
+              "primary-fixed": "#dce1ff",
+              "surface-variant": "#d5e3fc",
+              "secondary-fixed": "#d8e2ff",
+              "surface-container-highest": "#d5e3fc",
+              "on-tertiary-fixed-variant": "#653e00",
+              "error-container": "#ffdad6",
+              "on-surface": "#0d1c2e",
+              "surface-container-low": "#eff4ff",
+              "surface-container": "#e6eeff",
+              "tertiary-fixed-dim": "#ffb95f"
+            },
+            fontFamily: {
+              "headline": ["Inter"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+        }
+        .status-pillar {
+            border-left: 4px solid #f59e0b;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface">
+<!-- TopNavBar -->
+<nav class="sticky top-0 z-50 bg-surface-container-lowest/80 backdrop-blur-xl border-b border-outline-variant/10 px-8 py-4 flex items-center justify-between">
+<div class="flex items-center gap-12">
+<span class="text-xl font-bold text-primary tracking-tight">LawyerLink</span>
+<div class="flex items-center gap-8">
+<a class="text-sm font-medium text-on-surface-variant hover:text-primary transition-colors" href="#">Find Lawyers</a>
+<a class="text-sm font-medium text-on-surface-variant hover:text-primary transition-colors" href="#">AI Assistant</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="px-6 py-2 text-sm font-semibold text-primary hover:bg-surface-container-low transition-colors rounded-lg">Login</button>
+<button class="px-6 py-2 text-sm font-semibold text-on-primary bg-gradient-to-br from-primary to-primary-container rounded-lg shadow-lg shadow-primary/20">Sign Up</button>
+</div>
+</nav>
+<main class="max-w-7xl mx-auto px-8 py-12 lg:py-20">
+<!-- Profile Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-16">
+<!-- Left Column: Identity & Contact -->
+<div class="lg:col-span-4 space-y-10">
+<div class="relative group">
+<div class="aspect-[4/5] rounded-xl overflow-hidden bg-surface-container shadow-xl">
+<img class="w-full h-full object-cover" data-alt="Professional portrait of a male lawyer in a blue suit" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDQmLeXZtaEQHOZIC_J-bwLSTLl72IXpN-wj9pEz-mZB6qPMk_GTe5QxXVeEsuMrm6KemYFxw218vnPFuJLDYVDU8tq0y0_PMU9SO9klk6jxbd15Ncw_J2WlGEUbCnh5C04fKC4fZTEzTT6iliI5oaLCg474YnMMrvbNkEvOxNCVUEKj6-KGU1BaAGCL5y11mAyiLTjHHe4ZkgF17bRuyuLXeuteWpB_BWzDXSMsmDT_P0g8zxoDsSA0KgHF-gnwrLnx-Yl0VygSj_9"/>
+</div>
+<!-- Verification Badge -->
+<div class="absolute -bottom-4 -right-4 bg-surface-container-lowest p-3 rounded-xl shadow-2xl flex items-center gap-2 border border-outline-variant/20">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">verified</span>
+<span class="text-xs font-bold tracking-wider uppercase text-on-surface-variant">Verified Expert</span>
+</div>
+</div>
+<section class="space-y-6">
+<div>
+<h1 class="text-3xl font-bold tracking-tight text-on-surface mb-2">Jonathan Sterling, Esq.</h1>
+<p class="text-secondary font-medium uppercase tracking-widest text-xs">Senior Litigation Partner</p>
+</div>
+<div class="grid grid-cols-2 gap-3">
+<div class="bg-surface-container-low p-4 rounded-lg">
+<span class="text-[10px] uppercase font-bold text-outline tracking-widest block mb-1">Win Rate</span>
+<span class="text-xl font-bold text-primary">94%</span>
+</div>
+<div class="bg-surface-container-low p-4 rounded-lg">
+<span class="text-[10px] uppercase font-bold text-outline tracking-widest block mb-1">Experience</span>
+<span class="text-xl font-bold text-primary">15+ Yrs</span>
+</div>
+</div>
+</section>
+<section class="space-y-4">
+<h3 class="text-sm font-bold uppercase tracking-widest text-on-surface-variant">Specialties</h3>
+<div class="flex flex-wrap gap-2">
+<span class="px-3 py-1 bg-surface-container-high text-on-primary-fixed-variant text-xs font-semibold rounded-full">Corporate Law</span>
+<span class="px-3 py-1 bg-surface-container-high text-on-primary-fixed-variant text-xs font-semibold rounded-full">Intellectual Property</span>
+<span class="px-3 py-1 bg-surface-container-high text-on-primary-fixed-variant text-xs font-semibold rounded-full">Mergers &amp; Acquisitions</span>
+</div>
+</section>
+<div class="bg-primary text-on-primary p-8 rounded-xl shadow-2xl shadow-primary/30 space-y-6">
+<h3 class="text-lg font-bold">Schedule Consultation</h3>
+<div class="space-y-4">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-on-primary-container">mail</span>
+<span class="text-sm">j.sterling@sterlinglaw.com</span>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-on-primary-container">call</span>
+<span class="text-sm">+1 (555) 012-3456</span>
+</div>
+</div>
+<button class="w-full py-4 bg-surface-container-lowest text-primary font-bold rounded-lg hover:bg-surface-container-low transition-colors">Book Discovery Call</button>
+</div>
+</div>
+<!-- Right Column: Details & Experience -->
+<div class="lg:col-span-8 space-y-20">
+<!-- Bio Section -->
+<section class="space-y-8">
+<h2 class="text-4xl font-bold tracking-tight text-primary leading-tight">Championing Corporate Integrity Through Precise Legal Advocacy.</h2>
+<div class="prose prose-lg text-on-surface-variant max-w-none space-y-6 leading-relaxed">
+<p>Jonathan Sterling is a distinguished litigator with over 15 years of experience navigating the complexities of high-stakes corporate disputes. His approach combines rigorous analytical precision with an editorial clarity that ensures every case is presented with undeniable authority.</p>
+<p>Having represented Fortune 500 companies and emerging tech giants alike, Jonathan focuses on Intellectual Property protection and strategic Mergers &amp; Acquisitions. He is widely recognized for his ability to translate dense legal frameworks into actionable business strategies.</p>
+</div>
+</section>
+<!-- Professional Experience Timeline -->
+<section class="space-y-8">
+<div class="flex items-center justify-between">
+<h3 class="text-sm font-bold uppercase tracking-widest text-on-surface-variant">Professional Journey</h3>
+<div class="h-px flex-1 bg-outline-variant/30 ml-8"></div>
+</div>
+<div class="space-y-12">
+<div class="relative pl-8 border-l-2 border-surface-container-high">
+<div class="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-primary border-4 border-surface"></div>
+<span class="text-xs font-bold text-secondary mb-2 block uppercase tracking-tighter">2018 — Present</span>
+<h4 class="text-xl font-bold text-on-surface">Sterling &amp; Partners LLP</h4>
+<p class="text-on-surface-variant mt-2 leading-relaxed">Senior Managing Partner. Spearheading the Corporate Litigation department and overseeing cross-border IP disputes in 12 jurisdictions.</p>
+</div>
+<div class="relative pl-8 border-l-2 border-surface-container-high">
+<div class="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-outline-variant border-4 border-surface"></div>
+<span class="text-xs font-bold text-secondary mb-2 block uppercase tracking-tighter">2012 — 2018</span>
+<h4 class="text-xl font-bold text-on-surface">Vanguard Global Legal</h4>
+<p class="text-on-surface-variant mt-2 leading-relaxed">Lead Associate Counsel. Specialized in antitrust regulations and multi-billion dollar technology acquisition audits.</p>
+</div>
+</div>
+</section>
+<!-- Education & Pricing Bento Grid -->
+<section class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<!-- Education -->
+<div class="bg-surface-container-low p-8 rounded-xl space-y-6">
+<h3 class="text-sm font-bold uppercase tracking-widest text-on-surface-variant">Education</h3>
+<div class="space-y-6">
+<div>
+<h5 class="font-bold text-on-surface">Harvard Law School</h5>
+<p class="text-sm text-on-surface-variant">Juris Doctor (J.D.), cum laude</p>
+</div>
+<div>
+<h5 class="font-bold text-on-surface">Yale University</h5>
+<p class="text-sm text-on-surface-variant">B.A. in Political Science</p>
+</div>
+</div>
+</div>
+<!-- Pricing -->
+<div class="bg-surface-container-lowest border border-outline-variant/20 p-8 rounded-xl space-y-6">
+<h3 class="text-sm font-bold uppercase tracking-widest text-on-surface-variant">Consultation &amp; Fees</h3>
+<div class="space-y-4">
+<div class="flex justify-between items-center py-2 border-b border-outline-variant/10">
+<span class="text-sm text-on-surface-variant">Initial Consultation (30m)</span>
+<span class="font-bold text-primary">$250</span>
+</div>
+<div class="flex justify-between items-center py-2 border-b border-outline-variant/10">
+<span class="text-sm text-on-surface-variant">Hourly Retainer Rate</span>
+<span class="font-bold text-primary">$450</span>
+</div>
+<div class="flex justify-between items-center py-2">
+<span class="text-sm text-on-surface-variant">Case Review Deposit</span>
+<span class="font-bold text-primary">$1,500</span>
+</div>
+</div>
+</div>
+</section>
+</div>
+</div>
+<!-- Robust Reviews Section -->
+<section class="mt-32 space-y-12">
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div class="space-y-4">
+<h3 class="text-sm font-bold uppercase tracking-widest text-on-surface-variant">Client Testimonials</h3>
+<h2 class="text-4xl font-bold text-primary">Voices of Excellence</h2>
+</div>
+<div class="flex items-center gap-6 bg-surface-container-low px-8 py-4 rounded-xl">
+<div class="text-center">
+<div class="text-3xl font-bold text-primary">4.9</div>
+<div class="text-[10px] font-bold uppercase tracking-widest text-outline">Overall Rating</div>
+</div>
+<div class="h-10 w-px bg-outline-variant/30"></div>
+<div class="text-center">
+<div class="text-3xl font-bold text-primary">124</div>
+<div class="text-[10px] font-bold uppercase tracking-widest text-outline">Verified Reviews</div>
+</div>
+</div>
+</div>
+<!-- Reviews Masonry-like Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+<!-- Review Card 1 -->
+<div class="bg-surface-container-lowest p-8 rounded-xl shadow-sm border border-outline-variant/10 flex flex-col justify-between status-pillar">
+<div class="space-y-4">
+<div class="flex text-on-tertiary-container gap-1">
+<span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<p class="text-on-surface-variant leading-relaxed">"Jonathan handled our merger with absolute precision. His attention to detail and ability to predict potential legal hurdles saved us months of negotiation."</p>
+</div>
+<div class="mt-8 flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container-high overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Client profile avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDgmWrB3MXtpLAt44vi5bRyt0usaZGUQ8bkernHVv_qkouJXpbmFQnTDhAFnZvZzBGWLNlBAWGO55r5VMFUl4w9oyo5sFkj5EMeu5HtXtBMIY8n9ZyFjnW-GvgNHuYJzTGQj0XJXry423OPIE8m16r1d2gyMUiM7n-4HOQbiJn4DubckK9PJ12MsdtD_R1t9Al6uwSvtLpqjbLrlMTXFH9w9nwwZWwaI0S8gpDL2fFz4wyJTWbHpBqjL5JXcunH1CErN2NO3CThvCf2"/>
+</div>
+<div>
+<p class="text-sm font-bold text-on-surface">Marcus Thorne</p>
+<p class="text-[10px] uppercase font-bold text-outline">CEO, Aetheric Tech</p>
+</div>
+</div>
+</div>
+<!-- Review Card 2 -->
+<div class="bg-surface-container-lowest p-8 rounded-xl shadow-sm border border-outline-variant/10 flex flex-col justify-between">
+<div class="space-y-4">
+<div class="flex text-on-tertiary-container gap-1">
+<span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<p class="text-on-surface-variant leading-relaxed">"The most professional legal counsel I've worked with in 20 years. Jonathan doesn't just provide legal advice; he provides strategic clarity."</p>
+</div>
+<div class="mt-8 flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container-high overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Client profile avatar female" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBKO0wOpwhCrRp46CXQkpCklHQwSLqQQnXumCeQX0qK2mx20C5bkCWRpz54V0ubgor8YWK3MhYEpgWUSTvH2fS44qHqJOqluM5qGe5okFGCPBNSGoUorhwgJh7cpnlCzQes2xRpN_TJwtWIxXniwDnNrPkDEkjqgIbEv6_9BVNayarHQ0nxF5zCs4Rix5cyampXj7hO1COBCJIm_NLZLbka93xGMm3vi9-w_Ag_q9jARgfkR6hQ923rQGC4xubLJCJfOeBWjP5hRUlI"/>
+</div>
+<div>
+<p class="text-sm font-bold text-on-surface">Elena Rodriguez</p>
+<p class="text-[10px] uppercase font-bold text-outline">General Counsel, NexaCorp</p>
+</div>
+</div>
+</div>
+<!-- Review Card 3 -->
+<div class="bg-surface-container-lowest p-8 rounded-xl shadow-sm border border-outline-variant/10 flex flex-col justify-between">
+<div class="space-y-4">
+<div class="flex text-on-tertiary-container gap-1">
+<span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-lg">star</span>
+</div>
+<p class="text-on-surface-variant leading-relaxed">"Knowledgeable, responsive, and authoritative. He was instrumental in defending our patent portfolio against aggressive litigation."</p>
+</div>
+<div class="mt-8 flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container-high overflow-hidden">
+<div class="w-full h-full flex items-center justify-center bg-primary-container text-on-primary-container font-bold text-sm">DW</div>
+</div>
+<div>
+<p class="text-sm font-bold text-on-surface">David Wu</p>
+<p class="text-[10px] uppercase font-bold text-outline">VP Operations, Stellar Systems</p>
+</div>
+</div>
+</div>
+</div>
+<div class="flex justify-center">
+<button class="px-12 py-4 border border-outline text-sm font-bold uppercase tracking-widest text-on-surface hover:bg-surface-container-low transition-colors rounded-lg">View All Reviews</button>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-lowest border-t border-outline-variant/20 py-16 mt-20">
+<div class="max-w-7xl mx-auto px-8">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
+<div class="space-y-6">
+<span class="text-2xl font-bold text-primary tracking-tight">LawyerLink</span>
+<p class="text-sm text-on-surface-variant leading-relaxed">Connecting legal brilliance with professional necessity. The world's premier platform for high-end legal representation.</p>
+</div>
+<div>
+<h4 class="text-xs font-bold uppercase tracking-widest text-on-surface mb-6">Resources</h4>
+<ul class="space-y-4 text-sm text-on-surface-variant">
+<li><a class="hover:text-primary" href="#">Find Lawyers</a></li>
+<li><a class="hover:text-primary" href="#">AI Assistant</a></li>
+<li><a class="hover:text-primary" href="#">Legal Disclaimer</a></li>
+</ul>
+</div>
+<div>
+<h4 class="text-xs font-bold uppercase tracking-widest text-on-surface mb-6">Company</h4>
+<ul class="space-y-4 text-sm text-on-surface-variant">
+<li><a class="hover:text-primary" href="#">Privacy Policy</a></li>
+<li><a class="hover:text-primary" href="#">Terms of Service</a></li>
+<li><a class="hover:text-primary" href="#">Contact Support</a></li>
+</ul>
+</div>
+<div class="space-y-6">
+<h4 class="text-xs font-bold uppercase tracking-widest text-on-surface">Newsletter</h4>
+<div class="flex">
+<input class="bg-surface-container px-4 py-2 rounded-l-lg border-none focus:ring-1 focus:ring-primary w-full text-sm" placeholder="Email address" type="email"/>
+<button class="bg-primary text-on-primary px-4 py-2 rounded-r-lg">
+<span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+<div class="pt-8 border-t border-outline-variant/10 text-center">
+<p class="text-xs text-outline font-medium tracking-tight">© 2024 LawyerLink SaaS. All rights reserved.</p>
+</div>
+</div>
+</footer>
+</body></html>

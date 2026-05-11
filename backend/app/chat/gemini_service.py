@@ -16,9 +16,9 @@ from app.payment.model import Subscription, BoostPayment, SubscriptionStatus
 from app.core.config import settings
 
 
-client = genai.Client(api_key=settings.GEMINI_API_KEY)
-GEMINI_MODEL = "gemma-4-26b-a4b-it"
-# GEMINI_MODEL = "gemma-3-27b-it"
+# client = genai.Client(api_key=settings.GEMINI_API_KEY)
+# GEMINI_MODEL = "gemini-2.0-flash"
+GEMINI_MODEL = "gemma-3-27b-it"
 
 
 def call_gemini(prompt: str, temperature: float = 0.3) -> str:
@@ -41,7 +41,7 @@ def call_gemini_with_history(messages: list[dict], temperature: float = 0.3) -> 
         if role == "system" or role == "assistant":
             role = "model"
         contents.append({"role": role, "parts": [{"text": msg["content"]}]})
-    
+
     response = client.models.generate_content(
         model=GEMINI_MODEL,
         contents=contents,
