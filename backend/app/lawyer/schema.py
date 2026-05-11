@@ -39,3 +39,23 @@ class LawyerResponse(LawyerBase):
 
     class Config:
         from_attributes = True
+
+
+class LawyerPublicResponse(BaseModel):
+    user_id: int
+    email: Optional[str] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    firm: Optional[str] = None
+    specialties: Optional[str] = None
+    languages: Optional[str] = None
+    hourly_rate: Optional[float] = None
+    rating_avg: Optional[float] = None
+    rating_count: int = 0
+    city: Optional[str] = None
+    region: Optional[str] = None
+    image_url: Optional[str] = None
+    is_active: bool = True
+
+    class Config:
+        from_attributes = True
