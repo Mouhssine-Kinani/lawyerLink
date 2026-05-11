@@ -1,6 +1,6 @@
 # backend/app/payement/model.py
 from app.core.database import Base
-from sqlalchemy import Column, BigInteger, Integer, DateTime, Date, Enum as SAEnum, ForeignKey, DECIMAL
+from sqlalchemy import Column, BigInteger, Integer, String, DateTime, Date, Enum as SAEnum, ForeignKey, DECIMAL
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from enum import Enum
@@ -9,6 +9,11 @@ class SubscriptionStatus(str, Enum):
     active = "active"
     expired = "expired"
     cancelled = "cancelled"
+
+class PlanType(str, Enum):
+    basic = "basic"
+    pro = "pro"
+    elite = "elite"
 
 class PaymentType(str, Enum):
     subscription = "subscription"
@@ -23,6 +28,7 @@ class Subscription(Base):
     __tablename__ = "subscriptions"
     id = Column(BigInteger, primary_key=True, index=True)
     lawyer_id = Column(BigInteger, ForeignKey("lawyers.user_id"), nullable=False)
+    plan_type = Column(String(20), default="pro", nullable=False)
     start_date = Column(Date, nullable=False)
     end_date = Column(Date, nullable=False)
     status = Column(SAEnum(SubscriptionStatus), default=SubscriptionStatus.active, nullable=False)

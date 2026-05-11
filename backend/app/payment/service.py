@@ -15,34 +15,17 @@ def create_stripe_intent(
     amount: Decimal,
     payment_type: str,
     details: dict = None
-) -> str:
+) -> dict:
     """
     Create a Stripe PaymentIntent and corresponding PaymentTransaction.
     
-    For test mode (amount=0), we use SetupIntent instead of PaymentIntent.
-    SetupIntent saves a payment method without charging - perfect for testing.
-    
-    The metadata acts as the bridge between Stripe events and our local database.
-    When the webhook receives a payment_intent.succeeded event, it reads
-    the transaction_id and payment_type from metadata to update the
-    correct PaymentTransaction and create related records.
-    
-    Args:
-        db: Database session
-        user_id: The payer (user) ID
-        amount: Payment amount in MAD (will be converted to cents for Stripe)
-        payment_type: Either "subscription" or "boost"
-        details: Additional details like boost_level for boost payments
-    
     Returns:
-        client_secret: The Stripe client secret for frontend integration
+        dict: Containing client_secret and transaction_id
     """
     # Convert amount to cents (Stripe requires integer)
-    # For test mode with 0 amount, we still create the intent but amount is 0
     amount_cents = int(float(amount) * 100) if amount > 0 else 0
     
     # Create PaymentTransaction first (with pending status)
-    # This is the local record that the webhook will link to via metadata
     transaction = PaymentTransaction(
         payer_id=user_id,
         amount=amount,
@@ -52,8 +35,7 @@ def create_stripe_intent(
     db.add(transaction)
     db.flush()  # Flush to get the transaction ID
     
-    # For test mode (amount=0), use SetupIntent to save card without charging
-    # This is perfect for PFA/testing where we don't want real charges
+    # For test mode (amount=0), use SetupIntent
     if amount_cents == 0:
         setup_intent = stripe.SetupIntent.create(
             metadata={
@@ -63,13 +45,15 @@ def create_stripe_intent(
             }
         )
         
-        # Add details to metadata if provided
         if details and isinstance(details, dict):
             for key, value in details.items():
                 setup_intent.metadata[key] = str(value)
             setup_intent.save()
         
-        return setup_intent.client_secret
+        return {
+            "client_secret": setup_intent.client_secret,
+            "transaction_id": transaction.id
+        }
     
     # Create Stripe PaymentIntent for real payments
     payment_intent = stripe.PaymentIntent.create(
@@ -82,19 +66,25 @@ def create_stripe_intent(
         }
     )
     
-    # If details provided (like boost_level), add to metadata
     if details and isinstance(details, dict):
         for key, value in details.items():
             payment_intent.metadata[key] = str(value)
         payment_intent.save()
     
-    return payment_intent.client_secret
+    return {
+        "client_secret": payment_intent.client_secret,
+        "transaction_id": transaction.id
+    }
+
+
+BOOST_DURATION_MAP = {1: 7, 2: 14, 3: 30}
 
 
 def handle_subscription_payment(
     db: Session,
     transaction: PaymentTransaction,
-    user_id: int
+    user_id: int,
+    plan_type: str = "pro"
 ) -> Subscription:
     """
     Create a Subscription record after successful payment.
@@ -109,6 +99,7 @@ def handle_subscription_payment(
     
     subscription = Subscription(
         lawyer_id=user_id,
+        plan_type=plan_type,
         start_date=today,
         end_date=end_date,
         status=SubscriptionStatus.active
@@ -128,17 +119,19 @@ def handle_boost_payment(
     transaction: PaymentTransaction,
     user_id: int,
     boost_level: int,
-    duration_days: int = 7
+    duration_days: int = None
 ) -> BoostPayment:
     """
     Create a BoostPayment record after successful payment.
     
     Business logic:
-    - boost_level: Determines visibility priority (1-5)
+    - boost_level: Determines visibility priority (1-5), maps to duration
     - starts_at: Now
-    - expires_at: Now + duration_days (default 7)
+    - expires_at: Now + duration_days (based on boost_level if not provided)
     - amount: Already set in transaction
     """
+    if duration_days is None:
+        duration_days = BOOST_DURATION_MAP.get(boost_level, 7)
     now = datetime.utcnow()
     expires = now + timedelta(days=duration_days)
     
@@ -174,6 +167,7 @@ def get_subscription_status(db: Session, lawyer_id: int) -> dict:
     
     return {
         "id": subscription.id,
+        "plan_type": subscription.plan_type,
         "status": subscription.status.value,
         "start_date": subscription.start_date.isoformat(),
         "end_date": subscription.end_date.isoformat()
