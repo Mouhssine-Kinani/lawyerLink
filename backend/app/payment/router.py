@@ -17,23 +17,31 @@ router = APIRouter(prefix="/payments", tags=["Payments"])
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
 
+PLAN_PRICES = {"basic": 0, "pro": 299, "elite": 499}
+
+
 @router.post("/subscription")
 def create_subscription_intent(
+    plan: str = "pro",
     db: Session = Depends(get_db),
     current_user: User = Depends(require_role("lawyer"))
 ):
-    amount = 0 if settings.STRIPE_TEST_MODE else 299.00
+    if plan not in PLAN_PRICES:
+        raise HTTPException(status_code=400, detail="Invalid plan. Choose: basic, pro, elite")
     
-    client_secret = service.create_stripe_intent(
+    amount = 0 if settings.STRIPE_TEST_MODE else PLAN_PRICES[plan]
+    
+    result = service.create_stripe_intent(
         db=db,
         user_id=current_user.id,
         amount=amount,
-        payment_type="subscription"
+        payment_type="subscription",
+        details={"plan_type": plan}
     )
     
     db.commit()
     
-    return {"client_secret": client_secret}
+    return result
 
 
 @router.post("/boost")
@@ -60,7 +68,7 @@ def create_boost_intent(
     
     amount = 0 if settings.STRIPE_TEST_MODE else (49.00 * boost_level)
     
-    client_secret = service.create_stripe_intent(
+    result = service.create_stripe_intent(
         db=db,
         user_id=current_user.id,
         amount=amount,
@@ -70,7 +78,7 @@ def create_boost_intent(
     
     db.commit()
     
-    return {"client_secret": client_secret}
+    return result
 
 
 @router.get("/history")
@@ -144,11 +152,13 @@ def cancel_subscription(
 def simulate_payment_success(
     transaction_id: int,
     payment_type: str,
+    plan_type: str = "pro",
+    boost_level: int = 1,
     db: Session = Depends(get_db)
 ):
     """
     Test endpoint to simulate successful payment without Stripe.
-    Use query params: ?transaction_id=8&payment_type=subscription
+    Use query params: ?transaction_id=8&payment_type=subscription&plan_type=pro
     """
     transaction = db.query(PaymentTransaction).filter(
         PaymentTransaction.id == transaction_id
@@ -163,14 +173,15 @@ def simulate_payment_success(
         service.handle_subscription_payment(
             db=db,
             transaction=transaction,
-            user_id=user_id
+            user_id=user_id,
+            plan_type=plan_type
         )
     elif payment_type == "boost":
         service.handle_boost_payment(
             db=db,
             transaction=transaction,
             user_id=user_id,
-            boost_level=1
+            boost_level=boost_level
         )
     
     db.commit()
