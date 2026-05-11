@@ -12,3 +12,8 @@ __pycache__/
 # Distribution / packaging
 node_modules/
 .env
+
+uploads/
+
+
+app/role_privileges.json

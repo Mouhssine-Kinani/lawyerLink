@@ -1,0 +1,106 @@
+{
+  "project": "LawyerLink",
+  "description": "Legal consultation platform with AI assistance",
+  "features": {
+    "authentication": {
+      "status": "done",
+      "routes": {
+        "POST /auth/register": "Register new user (client or lawyer)",
+        "POST /auth/login": "Login and get JWT token",
+        "POST /auth/logout": "Logout (blacklist token)",
+        "POST /auth/forgot-password": "Request password reset",
+        "GET /auth/reset-password/verify": "Verify reset token validity",
+        "POST /auth/reset-password": "Reset password with token"
+      }
+    },
+    "user": {
+      "status": "done",
+      "routes": {
+        "GET /users/me": "Get current user profile",
+        "POST /users/me/image": "Upload profile picture",
+        "DELETE /users/me/image": "Delete profile picture",
+        "DELETE /users/me": "Delete account (cascade delete all data)"
+      }
+    },
+    "chat": {
+      "status": "done",
+      "routes": {
+        "POST /chat/session": "Create new chat session",
+        "POST /chat/session/{session_id}/message": "Send message, get AI response with lawyer recommendations",
+        "GET /chat/session/{session_id}/history": "Get chat history",
+        "GET /chat/session/{session_id}/specialty": "Extract legal specialty from chat",
+        "DELETE /chat/session/{session_id}": "Delete chat session",
+        "POST /chat/admin/check-subscriptions": "Check and update expired subscriptions (admin)"
+      }
+    },
+    "recommendation": {
+      "status": "done",
+      "routes": {
+        "GET /recommendations/session/{session_id}": "Get recommendations by session",
+        "GET /recommendations/client": "Get all recommendations for current client"
+      }
+    },
+    "lawyer": {
+      "status": "to_be_done",
+      "description": "Lawyer profile management and search",
+      "planned_routes": {
+        "GET /lawyers": "Get all lawyers (with filters)",
+        "GET /lawyers/{id}": "Get lawyer profile",
+        "PUT /lawyers/me": "Update lawyer profile",
+        "GET /lawyers/me": "Get own lawyer profile",
+        "GET /lawyers/me/stats": "Get lawyer statistics (reservations, reviews, etc.)"
+      }
+    },
+    "reservation": {
+      "status": "to_be_done",
+      "description": "Client-lawyer reservation system",
+      "planned_routes": {
+        "POST /reservations": "Create reservation",
+        "GET /reservations/client": "Get client's reservations",
+        "GET /reservations/lawyer": "Get lawyer's reservations",
+        "PUT /reservations/{id}": "Update reservation status (accept/reject/cancel)",
+        "GET /reservations/{id}": "Get reservation details"
+      }
+    },
+    "review": {
+      "status": "to_be_done",
+      "description": "Client reviews for lawyers",
+      "planned_routes": {
+        "POST /reviews": "Create review for lawyer",
+        "GET /reviews/lawyer/{lawyer_id}": "Get all reviews for a lawyer",
+        "GET /reviews/client": "Get client's reviews",
+        "PUT /reviews/{id}": "Update review",
+        "DELETE /reviews/{id}": "Delete review"
+      }
+    },
+    "payment": {
+      "status": "to_be_done",
+      "description": "Payment and subscription system",
+      "planned_routes": {
+        "POST /payments/subscribe": "Subscribe to premium plan",
+        "GET /payments/subscription": "Get current subscription",
+        "POST /payments/boost": "Boost lawyer profile",
+        "GET /payments/history": "Get payment history",
+        "POST /payments/checkout": "Create checkout session"
+      }
+    }
+  },
+  "models": {
+    "User": "Base user (email, password, role: client/lawyer/admin)",
+    "Client": "Client profile (extends User)",
+    "Lawyer": "Lawyer profile (extends User, with specialty, experience, etc.)",
+    "ChatSession": "AI chat session",
+    "ChatMessage": "Messages in chat session",
+    "Reservation": "Client-lawyer reservations",
+    "Review": "Client reviews for lawyers",
+    "RecommendationLog": "AI lawyer recommendations",
+    "Subscription": "Premium subscriptions",
+    "PaymentTransaction": "Payment history"
+  },
+  "summary": {
+    "features_done": 4,
+    "features_todo": 4,
+    "done": ["authentication", "user", "chat", "recommendation"],
+    "todo": ["lawyer", "reservation", "review", "payment"]
+  }
+}

@@ -1,0 +1,128 @@
+{
+  "project": "LawyerLink",
+  "description": "Legal consultation platform with AI assistance",
+  "version": "1.0.0",
+  "total_endpoints": 47,
+  "roles": {
+    "public": { "description": "No authentication required" },
+    "authenticated_any": { "description": "Any logged-in user (client, lawyer, or admin)" },
+    "client": { "description": "Users seeking legal assistance" },
+    "lawyer": { "description": "Licensed legal professionals" },
+    "admin": { "description": "Platform administrators" }
+  },
+  "modules": {
+    "auth": {
+      "description": "Authentication & account access",
+      "prefix": "/auth",
+      "endpoints": [
+        { "method": "POST", "path": "/auth/register", "role": "public", "description": "Register new user (client or lawyer)" },
+        { "method": "POST", "path": "/auth/login", "role": "public", "description": "Login and get JWT token" },
+        { "method": "POST", "path": "/auth/logout", "role": "authenticated_any", "description": "Logout and blacklist token" },
+        { "method": "POST", "path": "/auth/forgot-password", "role": "public", "description": "Request password reset" },
+        { "method": "GET", "path": "/auth/reset-password/verify", "role": "public", "description": "Verify reset token validity (query: token)" },
+        { "method": "POST", "path": "/auth/reset-password", "role": "public", "description": "Reset password with token" }
+      ]
+    },
+    "user": {
+      "description": "User profile management",
+      "prefix": "/users",
+      "endpoints": [
+        { "method": "GET", "path": "/users/me", "role": "authenticated_any", "description": "Get current user full profile (user + client/lawyer details)" },
+        { "method": "PATCH", "path": "/users/me", "role": "authenticated_any", "description": "Update basic profile fields (city, region)" },
+        { "method": "POST", "path": "/users/me/image", "role": "authenticated_any", "description": "Upload profile picture" },
+        { "method": "DELETE", "path": "/users/me/image", "role": "authenticated_any", "description": "Delete profile picture" },
+        { "method": "DELETE", "path": "/users/me", "role": "authenticated_any", "description": "Delete account with full cascade cleanup" }
+      ]
+    },
+    "chat": {
+      "description": "AI chat assistant for legal guidance",
+      "prefix": "/chat",
+      "endpoints": [
+        { "method": "POST", "path": "/chat/session", "role": "client", "description": "Create new AI chat session" },
+        { "method": "POST", "path": "/chat/session/{session_id}/message", "role": "client", "description": "Send message to AI chatbot (saves message, calls AI, saves response)" },
+        { "method": "GET", "path": "/chat/session/{session_id}/history", "role": "client", "description": "Get all messages in a chat session" },
+        { "method": "GET", "path": "/chat/session/{session_id}/specialty", "role": "client", "description": "Extract legal specialty from chat and trigger recommendations" },
+        { "method": "DELETE", "path": "/chat/session/{session_id}", "role": "client", "description": "Delete chat session and all messages" },
+        { "method": "POST", "path": "/chat/admin/check-subscriptions", "role": "admin", "description": "Check and update expired subscriptions" }
+      ]
+    },
+    "recommendation": {
+      "description": "AI-powered lawyer recommendations",
+      "prefix": "/recommendations",
+      "endpoints": [
+        { "method": "GET", "path": "/recommendations/session/{session_id}", "role": "public", "description": "Get lawyer recommendations for a chat session" },
+        { "method": "GET", "path": "/recommendations/client", "role": "client", "description": "Get all AI recommendations for the current client" }
+      ]
+    },
+    "lawyer": {
+      "description": "Lawyer dashboard (profile, reservations, reviews, payments)",
+      "prefix": "/lawyer",
+      "endpoints": [
+        { "method": "PATCH", "path": "/lawyer/me", "role": "lawyer", "description": "Update lawyer profile (first_name, last_name, firm, license_number, specialties, languages, hourly_rate, city, region)" },
+        { "method": "GET", "path": "/lawyer/me/reviews", "role": "lawyer", "description": "Get all reviews received by the lawyer" },
+        { "method": "GET", "path": "/lawyer/me/reservations", "role": "lawyer", "description": "Get lawyer's reservations (query: status, date_from, date_to, limit)" },
+        { "method": "PATCH", "path": "/lawyer/me/reservations/{reservation_id}", "role": "lawyer", "description": "Update reservation status (accept/reject/complete/cancel) or date/notes" },
+        { "method": "GET", "path": "/lawyer/me/payments/history", "role": "lawyer", "description": "Get payment history with filters (query: date_from, date_to, payment_type)" }
+      ]
+    },
+    "payment": {
+      "description": "Stripe payment processing (subscriptions & boosts)",
+      "prefix": "/payments",
+      "endpoints": [
+        { "method": "POST", "path": "/payments/subscription", "role": "lawyer", "description": "Create Stripe PaymentIntent for monthly subscription ($299)" },
+        { "method": "POST", "path": "/payments/boost", "role": "lawyer", "description": "Create Stripe PaymentIntent for profile boost (query: boost_level=1-5, price=$49*level)" },
+        { "method": "GET", "path": "/payments/history", "role": "lawyer", "description": "Get payment transaction history" },
+        { "method": "GET", "path": "/payments/subscription/me", "role": "lawyer", "description": "Get current subscription status (active/expired/cancelled)" },
+        { "method": "POST", "path": "/payments/subscription/renew", "role": "lawyer", "description": "Create PaymentIntent for subscription renewal" },
+        { "method": "POST", "path": "/payments/subscription/cancel", "role": "lawyer", "description": "Cancel active subscription" },
+        { "method": "POST", "path": "/payments/test/simulate-success", "role": "public", "description": "TEST ONLY: simulate successful payment (query: transaction_id, payment_type)" },
+        { "method": "POST", "path": "/payments/webhook", "role": "public", "description": "Stripe webhook handler for payment events" }
+      ]
+    },
+    "reservation": {
+      "description": "Appointment booking between clients and lawyers",
+      "prefix": "/reservations",
+      "endpoints": [
+        { "method": "POST", "path": "/reservations", "role": "client", "description": "Create a new reservation with a lawyer (checks availability and active subscription)" },
+        { "method": "GET", "path": "/reservations", "role": "authenticated_any", "description": "List own reservations filtered by role (query: status, limit)" },
+        { "method": "GET", "path": "/reservations/{reservation_id}", "role": "authenticated_any", "description": "Get single reservation (only if user is the client or lawyer on it)" },
+        { "method": "PATCH", "path": "/reservations/{reservation_id}", "role": "authenticated_any", "description": "Update reservation (clients: cancel pending; lawyers: accept/reject/complete, change dates)" },
+        { "method": "DELETE", "path": "/reservations/{reservation_id}", "role": "client", "description": "Cancel a pending reservation (soft delete)" }
+      ]
+    },
+    "review": {
+      "description": "Client reviews and ratings for lawyers",
+      "prefix": "/reviews",
+      "endpoints": [
+        { "method": "POST", "path": "/reviews", "role": "client", "description": "Submit review for a completed reservation (auto-updates lawyer rating)" },
+        { "method": "GET", "path": "/reviews/lawyer/{lawyer_id}", "role": "public", "description": "Get all reviews for a specific lawyer (public)" },
+        { "method": "GET", "path": "/reviews/me", "role": "client", "description": "Get all reviews written by the current client" },
+        { "method": "GET", "path": "/reviews/reservation/{reservation_id}", "role": "authenticated_any", "description": "Get review by reservation ID (only if user is the client or lawyer involved)" },
+        { "method": "PATCH", "path": "/reviews/{review_id}", "role": "client", "description": "Update own review (within 7-day window, recalculates lawyer rating)" },
+        { "method": "DELETE", "path": "/reviews/{review_id}", "role": "client", "description": "Delete own review (within 7-day window, recalculates lawyer rating)" },
+        { "method": "GET", "path": "/reviews/admin/all", "role": "admin", "description": "Get all reviews across the platform (query: limit, max 100)" }
+      ]
+    },
+    "admin": {
+      "description": "Admin dashboard and platform management",
+      "prefix": "/admin",
+      "endpoints": [
+        { "method": "GET", "path": "/admin/dashboard", "role": "admin", "description": "Get platform statistics (total users, clients, lawyers, reservations, reviews, avg rating)" },
+        { "method": "GET", "path": "/admin/users", "role": "admin", "description": "List all users (query: role, is_active, limit)" },
+        { "method": "GET", "path": "/admin/users/{user_id}", "role": "admin", "description": "Get user details by ID" },
+        { "method": "POST", "path": "/admin/users", "role": "admin", "description": "Create a new user (client or lawyer, cannot create admin)" },
+        { "method": "PATCH", "path": "/admin/users/{user_id}", "role": "admin", "description": "Update user (email, city, region; role changes blocked)" },
+        { "method": "DELETE", "path": "/admin/users/{user_id}", "role": "admin", "description": "Delete user (query: permanent=true for cascade delete; soft delete not yet implemented)" },
+        { "method": "GET", "path": "/admin/reservations", "role": "admin", "description": "List all reservations across platform (query: status, limit)" },
+        { "method": "GET", "path": "/admin/lawyers", "role": "admin", "description": "List all lawyers with subscription status (query: is_active, limit)" },
+        { "method": "PATCH", "path": "/admin/lawyers/{lawyer_id}/toggle-active", "role": "admin", "description": "Activate or deactivate a lawyer (query: is_active=true/false)" }
+      ]
+    }
+  },
+  "root_endpoints": [
+    { "method": "GET", "path": "/", "role": "public", "description": "Health check" }
+  ],
+  "static_files": [
+    { "path": "/uploads", "description": "Serves uploaded profile pictures" }
+  ]
+}

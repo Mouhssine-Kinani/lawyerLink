@@ -1,0 +1,130 @@
+{
+  "roles": {
+    "public": {
+      "description": "Unauthenticated visitors. No account or login required.",
+      "privileges": [
+        "Register a new account (client or lawyer)",
+        "Login to get a JWT token",
+        "Request password reset",
+        "View lawyer reviews publicly",
+        "View AI lawyer recommendations for a chat session",
+        "Access health check endpoint"
+      ],
+      "endpoints": [
+        { "method": "GET", "path": "/", "description": "Health check" },
+        { "method": "POST", "path": "/auth/register", "description": "Create a new user account" },
+        { "method": "POST", "path": "/auth/login", "description": "Authenticate and get JWT token" },
+        { "method": "POST", "path": "/auth/forgot-password", "description": "Request password reset token" },
+        { "method": "GET", "path": "/auth/reset-password/verify", "description": "Verify password reset token validity" },
+        { "method": "POST", "path": "/auth/reset-password", "description": "Reset password with valid token" },
+        { "method": "GET", "path": "/recommendations/session/{session_id}", "description": "Get AI lawyer recommendations for a chat session" },
+        { "method": "GET", "path": "/reviews/lawyer/{lawyer_id}", "description": "Get reviews for a specific lawyer" },
+        { "method": "POST", "path": "/payments/test/simulate-success", "description": "Test endpoint: simulate successful Stripe payment (disable in production)" },
+        { "method": "POST", "path": "/payments/webhook", "description": "Stripe webhook handler for payment events" }
+      ]
+    },
+    "authenticated_any": {
+      "description": "Any logged-in user regardless of role (client, lawyer, or admin).",
+      "inherits": "public",
+      "privileges": [
+        "View and update own profile",
+        "Upload and delete profile picture",
+        "Delete own account (with full cascade cleanup)",
+        "View and manage own reservations (filtered by role)",
+        "View reviews linked to own reservations"
+      ],
+      "endpoints": [
+        { "method": "POST", "path": "/auth/logout", "description": "Blacklist current JWT token (revoke session)" },
+        { "method": "GET", "path": "/users/me", "description": "Get full profile (user + client/lawyer details + image)" },
+        { "method": "POST", "path": "/users/me/image", "description": "Upload a new profile picture" },
+        { "method": "PATCH", "path": "/users/me", "description": "Update basic profile fields (city, region)" },
+        { "method": "DELETE", "path": "/users/me/image", "description": "Delete current profile picture" },
+        { "method": "DELETE", "path": "/users/me", "description": "Delete account and all associated data (cascade)" },
+        { "method": "GET", "path": "/reservations/", "description": "List own reservations (filtered by role: client sees client reservations, lawyer sees lawyer reservations). Supports ?status= and ?limit= filters" },
+        { "method": "GET", "path": "/reservations/{reservation_id}", "description": "Get single reservation (only if user is the client or lawyer on that reservation)" },
+        { "method": "PATCH", "path": "/reservations/{reservation_id}", "description": "Update reservation (clients can cancel pending; lawyers can accept/reject/complete and change dates for pending)" },
+        { "method": "GET", "path": "/reviews/reservation/{reservation_id}", "description": "Get review by reservation ID (only if user is the client who wrote it or the lawyer it was written about)" }
+      ]
+    },
+    "client": {
+      "description": "Regular users seeking legal assistance. Can chat with AI, book lawyers, and leave reviews.",
+      "inherits": "authenticated_any",
+      "privileges": [
+        "Create and manage AI chat sessions",
+        "Send messages to AI assistant and receive responses",
+        "View chat history",
+        "Extract legal specialty from chat and get lawyer recommendations",
+        "View personal AI recommendation history",
+        "Create reservations with lawyers (subject to availability and lawyer's active subscription)",
+        "Cancel pending reservations",
+        "Write reviews for completed reservations",
+        "Edit or delete own reviews within 7-day window",
+        "View own written reviews"
+      ],
+      "endpoints": [
+        { "method": "POST", "path": "/chat/session", "description": "Create a new AI chat session" },
+        { "method": "POST", "path": "/chat/session/{session_id}/message", "description": "Send a message in a chat session (saves client message, calls AI, saves response and recommendations)" },
+        { "method": "GET", "path": "/chat/session/{session_id}/history", "description": "Get all messages in a chat session" },
+        { "method": "GET", "path": "/chat/session/{session_id}/specialty", "description": "Extract legal specialty from chat messages and trigger recommendations" },
+        { "method": "DELETE", "path": "/chat/session/{session_id}", "description": "Delete a chat session and all its messages" },
+        { "method": "POST", "path": "/reservations/", "description": "Create a new reservation with a lawyer (checks lawyer active status, active subscription, and timeslot availability)" },
+        { "method": "DELETE", "path": "/reservations/{reservation_id}", "description": "Cancel a pending reservation (soft delete, sets status to cancelled)" },
+        { "method": "GET", "path": "/recommendations/client", "description": "Get all AI recommendations for the current client" },
+        { "method": "POST", "path": "/reviews/", "description": "Create a review for a completed reservation (auto-updates lawyer average rating)" },
+        { "method": "GET", "path": "/reviews/me", "description": "Get all reviews written by the current client" },
+        { "method": "PATCH", "path": "/reviews/{review_id}", "description": "Update own review (within 7-day edit window, recalculates lawyer rating)" },
+        { "method": "DELETE", "path": "/reviews/{review_id}", "description": "Delete own review (within 7-day window, recalculates lawyer rating)" }
+      ]
+    },
+    "lawyer": {
+      "description": "Licensed legal professionals. Can manage their profile, handle reservations, manage subscriptions, and receive boosts and reviews.",
+      "inherits": "authenticated_any",
+        "privileges": [
+        "View and update own lawyer profile (name, firm, specialties, languages, hourly_rate, location)",
+        "Subscribe to the platform (monthly subscription)",
+        "Purchase profile boosts to increase visibility (levels 1-5)",
+        "Renew or cancel subscription",
+        "View payment and transaction history",
+        "View current subscription status",
+        "View and manage incoming reservations",
+        "Accept, reject, or complete reservations",
+        "Update reservation dates (check for conflicts)",
+        "View all reviews received from clients"
+      ],
+        "endpoints": [
+        { "method": "PATCH", "path": "/lawyer/me", "description": "Update lawyer profile (first_name, last_name, firm, license_number, specialties, languages, hourly_rate, city, region)" },
+        { "method": "POST", "path": "/payments/subscription", "description": "Create Stripe PaymentIntent for monthly subscription ($299 or $0 in test mode)" },
+        { "method": "POST", "path": "/payments/boost", "description": "Create Stripe PaymentIntent for profile boost (requires active subscription, price = $49 * boost_level 1-5)" },
+        { "method": "GET", "path": "/payments/history", "description": "Get payment transaction history" },
+        { "method": "GET", "path": "/payments/subscription/me", "description": "Get current subscription status (active/expired/cancelled)" },
+        { "method": "POST", "path": "/payments/subscription/renew", "description": "Create PaymentIntent for subscription renewal" },
+        { "method": "POST", "path": "/payments/subscription/cancel", "description": "Cancel active subscription (sets status to cancelled)" },
+        { "method": "GET", "path": "/lawyer/me/reviews", "description": "Get all reviews received by the lawyer" },
+        { "method": "GET", "path": "/lawyer/me/reservations", "description": "Get lawyer's reservations. Supports ?status=, ?date_from=, ?date_to=, ?limit= filters" },
+        { "method": "PATCH", "path": "/lawyer/me/reservations/{reservation_id}", "description": "Update reservation status or date (validates state transitions and timeslot conflicts)" },
+        { "method": "GET", "path": "/lawyer/me/payments/history", "description": "Get payment history with date and type filters" }
+      ]
+    },
+    "admin": {
+      "description": "Platform administrators. Full oversight of the platform (routes still being developed).",
+      "inherits": "authenticated_any",
+      "privileges": [
+        "Check and update expired subscriptions across the platform",
+        "View all reviews on the platform for moderation"
+      ],
+      "endpoints": [
+        { "method": "POST", "path": "/chat/admin/check-subscriptions", "description": "Check and update expired subscriptions (sets active -> expired)" },
+        { "method": "GET", "path": "/reviews/admin/all", "description": "Get all reviews across the platform for moderation. Supports ?limit= (max 100)" }
+      ],
+      "note": "Admin endpoints are still being developed. More admin functionality will be added."
+    }
+  },
+        "total_endpoints": 39,
+        "breakdown": {
+          "public": 10,
+          "authenticated_any": 6,
+          "client_only": 12,
+          "lawyer_only": 11,
+          "admin_only": 2
+        }
+}
