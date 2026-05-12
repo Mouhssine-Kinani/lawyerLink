@@ -21,14 +21,12 @@ function parseSpecialties(specialties) {
   return specialties.split(",").map((s) => s.trim()).filter(Boolean);
 }
 
-const PLACEHOLDER_IMAGES = [
-  "https://lh3.googleusercontent.com/aida-public/AB6AXuCRCKxGzp6_RP2TueZfgTzC250PEJid_LvtCfiwDTdVUM27Qqu6fboagZtErjdkJMVR9DEu93pX9K8tkoTZj5yaEuiDrZqgpoUXsNr2iDTXuujVfkDXDAlEsV4VQySBHwmkqtbIAWicgch0ZY7-8AqmccIRHveoNzEoum82VsdmbTpdk9tmg3WOkFNwoPtnMAr9jJsx0vO4_uAb2ZBCJ5hhtM7Zlz6O7g7TDjEMzueNPkKC4TINRo6WCMxqM_SR96AUAwgjGgc3e6Ou",
-  "https://lh3.googleusercontent.com/aida-public/AB6AXuCYuUYsNycerWuKUp4MmLw_hVvhB4JEiDRUyTZIPkzqSC38InmblOtZMxS_z9fbu97lj668_Suaiv3a_lMhbPDKofWwOEE5i3H27nsgaJEQFgKYebN7kpcoMa7Ctq9Gf1iKa8dC9dToNUud-FbV0u3_DQoFMcY06I1r9dibSytUM_Va72vS8MJgh8zua1BoIg96bmhR8XZN7jWMcst5j3pRFp6_xsGUbDjYedCl-58qK_cHb_hBpspantd01l_2fOQHrP5pXONlv-v8",
-  "https://lh3.googleusercontent.com/aida-public/AB6AXuDiDOOSRikWKLdQPzFC9BLwFCIXIUlsAa0QPKjCY4ZN11X9Q9dH7ksVQImn6VVQ3l4TU6RityjlsQXzlAaZPHDhLy7PoLGSL134WXktHPrUMX3WQhDaadHVVoG_CKyh2P_g-0KxEBB7ya5MUjbrnDzbmktmS5WrFXlfmvE22z-BG5y34nYYoOpOTk84qOp5f7ePDbUu8vq95wZ1FJy7UqAR2PwpaJrQmiKdUNmygGs6l9nXVKLInmYhNuZwRXBkHuz102ksoXs8260T",
-  "https://lh3.googleusercontent.com/aida-public/AB6AXuAR7gw7yoy1-I2YknYUXT8aH0N7csQmjXnorwzmoseMmeVGH4l6HY-YoG4A5cbDNPyp_j0pyzOGzbzpMzhZXDak9gS6t5Zt_jSyoyZLFl8REHqzDBUvYcrnYJki5ci7fvNKR9nW0Cs0jAiBBd2jYdKyuc9jnJHESgntKFrsJcLERdg4vhzawzEqDG5a5Y8FF76ZRiDIQxWArL_-mtyu01iyt2hAn_4zIjMN1Pe8jonzDQh1si4jbiovXi6OjVTgf67A_JBp_5bOmn8M",
-  "https://lh3.googleusercontent.com/aida-public/AB6AXuB7iZsu-Dt4z9_6SarD5qEC4JjcOGtx_9AmIqxJxvwC_WzBAnh-siSkYYvLAh7zZHULxmoKQhfe9_e0PtRCKyaMTVcKpsBmQlbHL3YEyeqzKtkp9ybZl0wx6FROC1PJwMaYB5mJulRzWUHKDT_QBWuoxquZHbjcFRMftQRX78KIIVebUN-e6LLAfePrNLe9JCAO9FMPNBpL_wBtbhqYleLEBS4QKqfgaJfPs_ickAe0WOm985LGloo1mejO9ZnlHwux8-n4OcwQMjBb",
-  "https://lh3.googleusercontent.com/aida-public/AB6AXuBQpk2HMbVWTApacNHxTFpFRhTNeSLHPsFKl-qxrp4Pxxtk5PhB8BFLAVbGpt2nTqxlgKEaZ2-fSaiEVYfxKHUa4aTS7GMqFCTO0gQvWH71-7FuKel3C5_5eYTLDF-LU-MQzxtPd0GkTTGblrLvbGuub1OFn5QU3xQTuR4KUh9IxccNyYfjKKAM_0Lp9gODZm4Q2zrTlWrRKmt6OvXp4A3Hc3HlMmDjGpsak-ugKfG9F-rFGFUWCtf9F8PahKJ-rvxIIleCKzqXKALc",
-];
+const PLACEHOLDER_AVATAR = "data:image/svg+xml," + encodeURIComponent(
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 112 112">
+    <rect width="112" height="112" fill="#e0e0e0"/>
+    <path fill="#bdbdbd" d="M56 56c12.4 0 22.5-10.1 22.5-22.5S68.4 11 56 11 33.5 21.1 33.5 33.5 43.6 56 56 56zm0 11.2C40.3 67.2 11 76.5 11 95v6h90v-6c0-18.5-29.3-27.8-45-27.8z"/>
+  </svg>`
+);
 
 export default function LawyerListPage() {
   const [lawyers, setLawyers] = useState([]);
@@ -259,7 +257,7 @@ export default function LawyerListPage() {
               {lawyers.map((lawyer) => {
                 const specialties = parseSpecialties(lawyer.specialties);
                 const fullName = [lawyer.first_name, lawyer.last_name].filter(Boolean).join(" ") || "Legal Professional";
-                const imgSrc = imageUrl(lawyer.image_url) || PLACEHOLDER_IMAGES[(lawyer.user_id || 0) % PLACEHOLDER_IMAGES.length];
+                const imgSrc = imageUrl(lawyer.image_url) || PLACEHOLDER_AVATAR;
 
                 return (
                   <div key={lawyer.user_id} className="group relative bg-surface-container-lowest rounded-xl p-6 shadow-[0_4px_20px_rgba(13,28,46,0.04)] hover:shadow-xl transition-all border border-transparent hover:border-primary/10 overflow-hidden">
