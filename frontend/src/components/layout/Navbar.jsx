@@ -27,16 +27,18 @@ export default function Navbar() {
               >
                 Find Lawyers
               </NavLink>
-              <NavLink
-                to="/client/chat"
-                className={({ isActive }) =>
-                  `hover:text-secondary transition-colors ${
-                    isActive ? "text-secondary" : "text-on-surface"
-                  }`
-                }
-              >
-                AI Assistant
-              </NavLink>
+              {user?.role !== "lawyer" && (
+                <NavLink
+                  to="/client/chat"
+                  className={({ isActive }) =>
+                    `hover:text-secondary transition-colors ${
+                      isActive ? "text-secondary" : "text-on-surface"
+                    }`
+                  }
+                >
+                  AI Assistant
+                </NavLink>
+              )}
             </div>
           )}
         </div>
