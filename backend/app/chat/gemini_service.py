@@ -40,7 +40,7 @@ def call_gemini_with_history(messages: list[dict], temperature: float = 0.3) -> 
         if role == "system" or role == "assistant":
             role = "model"
         contents.append({"role": role, "parts": [{"text": msg["content"]}]})
-    
+
     response = client.models.generate_content(
         model=GEMINI_MODEL,
         contents=contents,

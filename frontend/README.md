@@ -1,16 +1,56 @@
-# React + Vite
+# LawyerLink - Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Payment Feature Setup
 
-Currently, two official plugins are available:
+The payment system uses Stripe but defaults to **test/demo mode** (`STRIPE_TEST_MODE=true`) where no real money is charged. To get it working after a fresh clone:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+### 1. Environment Variables
+Ensure the backend `.env` file has these values (defaults are fine for test mode):
+```env
+STRIPE_SECRET_KEY=sk_test_...         # Can be any dummy value in test mode
+STRIPE_WEBHOOK_SECRET=whsec_...       # Can be any dummy value in test mode
+STRIPE_CURRENCY=mad
+STRIPE_TEST_MODE=true                  # true = 0 MAD charges, no real Stripe calls
+```
 
-## React Compiler
+### 2. Run Database Migrations
+The `subscriptions` table needs the `plan_type` column. From the `backend/` directory:
+```bash
+alembic upgrade head
+```
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### 3. User Flow (Test Mode)
+1. **Register** as a lawyer at `/register`
+2. **Log in** — the JWT token is stored in localStorage as `lawyerlink_token`
+3. Navigate to **Subscription** at `/lawyer/subscription`
+4. Click **Upgrade Now** on any plan (Pro recommended)
+   - Backend creates a SetupIntent with amount=0
+   - Frontend calls `simulate-success` to bypass Stripe
+   - A `Subscription` record is created in the DB
+5. After subscribing, the **Boost** cards unlock — choose a duration and click **Activate Boost**
+6. Billing history appears at the bottom of the page
 
-## Expanding the ESLint configuration
+### 4. API Endpoints (all under `/payments`)
+| Method | Path | Purpose |
+|--------|------|---------|
+| POST | `/subscription?plan=pro` | Create subscription intent |
+| POST | `/boost?boost_level=1` | Create boost intent |
+| GET | `/subscription/me` | Get current subscription |
+| GET | `/history` | Get payment history |
+| POST | `/subscription/cancel` | Cancel subscription |
+| POST | `/test/simulate-success` | Simulate payment success (test mode only) |
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### 5. Plans & Pricing
+| Plan | Price | Boost Level | Duration | Boost Price |
+|------|-------|-------------|----------|-------------|
+| Basic | MAD 0/mo | Sprint (1) | 7 days | MAD 149 |
+| Pro | MAD 299/mo | Catalyst (2) | 14 days | MAD 269 |
+| Elite | MAD 499/mo | Authority (3) | 30 days | MAD 499 |
+
+In test mode, all prices are treated as MAD 0.
+
+### 6. Troubleshooting
+- **Blank page**: Make sure `axios.js` is not empty (rewritten to use `fetch`)
+- **401 Unauthorized**: Verify the token key in `payment.api.js` matches `AuthContext.jsx` — both use `lawyerlink_token`
+- **500 / Unknown column**: Run `alembic upgrade head` to sync the database schema
+- **CORS errors**: Backend must allow `http://localhost:5173` (set in `ALLOWED_ORIGINS`)

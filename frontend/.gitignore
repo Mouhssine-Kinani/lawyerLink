@@ -29,3 +29,7 @@ backend_structure.txt
 frontend_structure.txt
 export_project_structure.py
 uploads/
+
+# Seed and test credentials
+seed.py
+test_credentials.json

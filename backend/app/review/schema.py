@@ -30,3 +30,9 @@ class ReviewResponse(ReviewBase):
 
     class Config:
         from_attributes = True
+
+
+class ReviewWithClientResponse(ReviewResponse):
+    client_first_name: Optional[str] = None
+    client_last_name: Optional[str] = None
+    client_image_url: Optional[str] = None

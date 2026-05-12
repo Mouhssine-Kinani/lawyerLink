@@ -7,7 +7,7 @@ from app.core.database import get_db
 from app.core.dependencies import require_role
 from app.user.model import User
 from app.lawyer.model import Lawyer
-from app.lawyer.schema import LawyerUpdate, LawyerResponse
+from app.lawyer.schema import LawyerUpdate, LawyerResponse, LawyerPublicResponse
 from app.review.model import Review
 from app.review.schema import ReviewResponse
 from app.reservation.model import Reservation, ReservationStatus
@@ -16,6 +16,112 @@ from app.payment.model import PaymentTransaction, PaymentType, PaymentStatus
 from app.user.model import Client
 
 router = APIRouter(prefix="/lawyer", tags=["Lawyer"])
+
+
+# ──────────────────────────────────────────────────────────────
+# LIST ALL ACTIVE LAWYERS (Public)
+# ──────────────────────────────────────────────────────────────
+
+@router.get("/public", response_model=list[LawyerPublicResponse])
+def list_lawyers_public(
+    specialty: Optional[str] = Query(None),
+    city: Optional[str] = Query(None),
+    min_rate: Optional[float] = Query(None),
+    max_rate: Optional[float] = Query(None),
+    min_rating: Optional[float] = Query(None),
+    sort_by: Optional[str] = Query(None),
+    limit: int = Query(50, ge=1, le=100),
+    db: Session = Depends(get_db)
+):
+    from sqlalchemy import or_
+
+    query = (
+        db.query(Lawyer, User)
+        .join(User, User.id == Lawyer.user_id)
+        .filter(Lawyer.is_active == True)
+    )
+
+    if specialty:
+        specs = [s.strip() for s in specialty.split(",") if s.strip()]
+        if specs:
+            filters = [Lawyer.specialties.ilike(f"%{s}%") for s in specs]
+            query = query.filter(or_(*filters))
+    if city:
+        query = query.filter(
+            (Lawyer.city.ilike(f"%{city}%")) | (User.city.ilike(f"%{city}%"))
+        )
+    if min_rate is not None:
+        query = query.filter(Lawyer.hourly_rate >= min_rate)
+    if max_rate is not None:
+        query = query.filter(Lawyer.hourly_rate <= max_rate)
+    if min_rating is not None:
+        query = query.filter(Lawyer.rating_avg >= min_rating)
+
+    if sort_by == "rating":
+        query = query.order_by(Lawyer.rating_avg.desc())
+    elif sort_by == "rate":
+        query = query.order_by(Lawyer.hourly_rate.is_(None).asc(), Lawyer.hourly_rate.asc())
+    elif sort_by == "experience":
+        query = query.order_by(Lawyer.rating_count.desc())
+    else:
+        query = query.order_by(Lawyer.rating_avg.desc())
+
+    results = query.limit(limit).all()
+
+    return [
+        LawyerPublicResponse(
+            user_id=lawyer.user_id,
+            email=user.email,
+            first_name=lawyer.first_name,
+            last_name=lawyer.last_name,
+            firm=lawyer.firm,
+            specialties=lawyer.specialties,
+            languages=lawyer.languages,
+            hourly_rate=float(lawyer.hourly_rate) if lawyer.hourly_rate else None,
+            rating_avg=float(lawyer.rating_avg) if lawyer.rating_avg else None,
+            rating_count=lawyer.rating_count,
+            city=lawyer.city or user.city,
+            region=lawyer.region or user.region,
+            image_url=user.image_url,
+            is_active=lawyer.is_active
+        )
+        for lawyer, user in results
+    ]
+
+
+# ──────────────────────────────────────────────────────────────
+# GET LAWYER DETAIL (Public)
+# ──────────────────────────────────────────────────────────────
+
+@router.get("/public/{lawyer_id}", response_model=LawyerPublicResponse)
+def get_lawyer_public(
+    lawyer_id: int,
+    db: Session = Depends(get_db)
+):
+    lawyer = db.query(Lawyer).filter(Lawyer.user_id == lawyer_id).first()
+    if not lawyer:
+        raise HTTPException(404, "Lawyer not found")
+
+    user = db.query(User).filter(User.id == lawyer.user_id).first()
+    if not user:
+        raise HTTPException(404, "User not found")
+
+    return LawyerPublicResponse(
+        user_id=lawyer.user_id,
+        email=user.email,
+        first_name=lawyer.first_name,
+        last_name=lawyer.last_name,
+        firm=lawyer.firm,
+        specialties=lawyer.specialties,
+        languages=lawyer.languages,
+        hourly_rate=float(lawyer.hourly_rate) if lawyer.hourly_rate else None,
+        rating_avg=float(lawyer.rating_avg) if lawyer.rating_avg else None,
+        rating_count=lawyer.rating_count,
+        city=lawyer.city or user.city,
+        region=lawyer.region or user.region,
+        image_url=user.image_url,
+        is_active=lawyer.is_active
+    )
 
 
 # ──────────────────────────────────────────────────────────────
