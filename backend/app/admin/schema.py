@@ -64,3 +64,6 @@ class DashboardStats(BaseModel):
     completed_reservations: int
     total_reviews: int
     avg_rating: Optional[float]
+    total_subscription_revenue: float = 0
+    total_boost_revenue: float = 0
+    total_revenue: float = 0

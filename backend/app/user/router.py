@@ -4,8 +4,9 @@ from app.core.database import get_db
 from app.core.dependencies import get_current_user
 from app.core.upload import save_profile_picture, delete_profile_picture
 from app.user.model import User
-from app.user.schema import UserResponse, UserFullResponse, UserUpdate, ClientResponse, LawyerResponse
+from app.user.schema import UserResponse, UserFullResponse, UserUpdate, ClientResponse, ClientUpdate, LawyerResponse
 
+from app.core.dependencies import require_role
 from app.core.blacklist import TokenBlacklist
 from app.chat.model import ChatSession, ChatMessage
 from app.reservation.model import Reservation
@@ -92,6 +93,53 @@ def update_current_user_profile(
         region=current_user.region,
         image_url=current_user.image_url,
         created_at=current_user.created_at
+    )
+
+
+@router.patch("/me/client", response_model=UserFullResponse)
+def update_client_profile(
+    update: ClientUpdate,
+    current_user: User = Depends(require_role("client")),
+    db: Session = Depends(get_db)
+):
+    changed = False
+    if update.first_name is not None:
+        current_user.client_profile.first_name = update.first_name
+        changed = True
+    if update.last_name is not None:
+        current_user.client_profile.last_name = update.last_name
+        changed = True
+    if update.phone is not None:
+        current_user.client_profile.phone = update.phone
+        changed = True
+    if update.city is not None:
+        current_user.city = update.city
+        changed = True
+    if update.region is not None:
+        current_user.region = update.region
+        changed = True
+    if not changed:
+        raise HTTPException(400, "No fields to update")
+    db.commit()
+    db.refresh(current_user, ['client_profile'])
+
+    client_data = ClientResponse(
+        first_name=current_user.client_profile.first_name,
+        last_name=current_user.client_profile.last_name,
+        phone=current_user.client_profile.phone,
+        user_id=current_user.client_profile.user_id
+    ) if current_user.client_profile else None
+
+    return UserFullResponse(
+        id=current_user.id,
+        email=current_user.email,
+        role=current_user.role.value,
+        city=current_user.city,
+        region=current_user.region,
+        image_url=current_user.image_url,
+        created_at=current_user.created_at,
+        client_profile=client_data,
+        lawyer_profile=None
     )
 
 

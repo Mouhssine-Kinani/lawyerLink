@@ -18,6 +18,7 @@ import ReservationPage from "./pages/client/ReservationPage";
 import MyReservationsPage from "./pages/client/MyReservationsPage";
 import RecommendationsPage from "./pages/client/RecommendationsPage";
 import ReviewPage from "./pages/client/ReviewPage";
+import ClientProfile from "./pages/client/ClientProfile";
 
 // ─── Lawyer Pages ────────────────────────────────────────────────────────────
 import LawyerDashboardPage from "./pages/lawyer/DashboardPage";
@@ -72,6 +73,9 @@ export default function App() {
           />
           <Route path="/client/reviews"
             element={<PrivateRoute><ReviewPage /></PrivateRoute>}
+          />
+          <Route path="/client/profile"
+            element={<PrivateRoute><ClientProfile /></PrivateRoute>}
           />
 
           {/* ── Lawyer (role = "lawyer") ─────────────────────────────────── */}

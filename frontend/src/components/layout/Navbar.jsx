@@ -2,6 +2,7 @@ import { Link, NavLink } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { lawyerApi } from "../../api/lawyer.api";
+import { clientApi } from "../../api/client.api";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
@@ -23,13 +24,21 @@ const PLACEHOLDER_AVATAR =
 export default function Navbar() {
   const { user, token, isAuthenticated, logout } = useAuth();
   const [lawyerImage, setLawyerImage] = useState(null);
+  const [clientImage, setClientImage] = useState(null);
 
   useEffect(() => {
-    if (isAuthenticated && user?.role === "lawyer" && token) {
-      lawyerApi
-        .getMyProfile(token)
-        .then((data) => setLawyerImage(data.image_url))
-        .catch(() => {});
+    if (isAuthenticated && token) {
+      if (user?.role === "lawyer") {
+        lawyerApi
+          .getMyProfile(token)
+          .then((data) => setLawyerImage(data.image_url))
+          .catch(() => {});
+      } else if (user?.role === "client") {
+        clientApi
+          .getMyProfile(token)
+          .then((data) => setClientImage(data.image_url))
+          .catch(() => {});
+      }
     }
   }, [isAuthenticated, user?.role, token]);
 
@@ -47,29 +56,44 @@ export default function Navbar() {
           >
             LawyerLink
           </Link>
-          {isAuthenticated && user?.role !== "admin" && (
+          {isAuthenticated && (
             <div className="hidden md:flex gap-6 text-sm font-medium">
-              <NavLink
-                to="/client/lawyers"
-                className={({ isActive }) =>
-                  `hover:text-secondary transition-colors ${
-                    isActive ? "text-secondary" : "text-on-surface"
-                  }`
-                }
-              >
-                Find Lawyers
-              </NavLink>
-              {user?.role !== "lawyer" && (
+              {user?.role === "admin" ? (
                 <NavLink
-                  to="/client/chat"
+                  to="/admin/dashboard"
                   className={({ isActive }) =>
                     `hover:text-secondary transition-colors ${
                       isActive ? "text-secondary" : "text-on-surface"
                     }`
                   }
                 >
-                  AI Assistant
+                  Dashboard
                 </NavLink>
+              ) : (
+                <>
+                  <NavLink
+                    to="/client/lawyers"
+                    className={({ isActive }) =>
+                      `hover:text-secondary transition-colors ${
+                        isActive ? "text-secondary" : "text-on-surface"
+                      }`
+                    }
+                  >
+                    Find Lawyers
+                  </NavLink>
+                  {user?.role !== "lawyer" && (
+                    <NavLink
+                      to="/client/chat"
+                      className={({ isActive }) =>
+                        `hover:text-secondary transition-colors ${
+                          isActive ? "text-secondary" : "text-on-surface"
+                        }`
+                      }
+                    >
+                      AI Assistant
+                    </NavLink>
+                  )}
+                </>
               )}
             </div>
           )}
@@ -117,16 +141,29 @@ export default function Navbar() {
                   />
                 </div>
               )}
-              {user?.role === "lawyer" && (
+              {(user?.role === "lawyer" || user?.role === "admin") && (
                 <Link
-                  to="/lawyer/profile"
+                  to={user?.role === "admin" ? "/admin/dashboard" : "/lawyer/profile"}
                   className="w-9 h-9 rounded-full overflow-hidden bg-surface-container-high border-2 border-outline-variant/20 hover:border-primary/40 transition-all flex-shrink-0"
-                  title="Edit Profile"
+                  title={user?.role === "admin" ? "Admin Dashboard" : "Edit Profile"}
                 >
                   <img
                     className="w-full h-full object-cover"
                     alt="Profile"
                     src={imageUrl(lawyerImage) || PLACEHOLDER_AVATAR}
+                  />
+                </Link>
+              )}
+              {user?.role === "client" && (
+                <Link
+                  to="/client/profile"
+                  className="w-9 h-9 rounded-full overflow-hidden bg-surface-container-high border-2 border-outline-variant/20 hover:border-primary/40 transition-all flex-shrink-0"
+                  title="My Profile"
+                >
+                  <img
+                    className="w-full h-full object-cover"
+                    alt="Profile"
+                    src={imageUrl(clientImage) || PLACEHOLDER_AVATAR}
                   />
                 </Link>
               )}

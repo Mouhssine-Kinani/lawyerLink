@@ -11,7 +11,7 @@ from app.user.model import User, Client, Role
 from app.lawyer.model import Lawyer
 from app.reservation.model import Reservation, ReservationStatus
 from app.review.model import Review
-from app.payment.model import Subscription, SubscriptionStatus
+from app.payment.model import Subscription, SubscriptionStatus, PaymentTransaction, PaymentStatus, PaymentType
 from app.admin.schema import (
     CreateUserRequest, UpdateUserRequest, 
     AdminUserResponse, AdminLawyerResponse, DashboardStats
@@ -37,6 +37,18 @@ def get_dashboard_stats(current_user:User = Depends(require_role("admin")) ,db:S
     average_rating_result = db.query(func.avg(Lawyer.rating_avg)).filter(Lawyer.rating_count > 0).first()
     avg_rating = float(average_rating_result[0]) if average_rating_result[0] else None
 
+    subscription_revenue = db.query(func.sum(PaymentTransaction.amount)).filter(
+        PaymentTransaction.type == PaymentType.subscription,
+        PaymentTransaction.status == PaymentStatus.success
+    ).scalar() or 0
+
+    boost_revenue = db.query(func.sum(PaymentTransaction.amount)).filter(
+        PaymentTransaction.type == PaymentType.boost,
+        PaymentTransaction.status == PaymentStatus.success
+    ).scalar() or 0
+
+    total_revenue = float(subscription_revenue) + float(boost_revenue)
+
     return DashboardStats(
         total_users = total_users,
         total_clients = total_clients,
@@ -45,7 +57,10 @@ def get_dashboard_stats(current_user:User = Depends(require_role("admin")) ,db:S
         pending_reservations = pending_reservations,
         completed_reservations = completed_reservations,
         total_reviews = total_reviews,
-        avg_rating = avg_rating
+        avg_rating = avg_rating,
+        total_subscription_revenue = float(subscription_revenue),
+        total_boost_revenue = float(boost_revenue),
+        total_revenue = total_revenue
     )
     
 
