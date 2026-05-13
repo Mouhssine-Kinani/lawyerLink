@@ -19,7 +19,7 @@ function parseSpecialties(specialties) {
   try {
     const parsed = JSON.parse(specialties);
     if (Array.isArray(parsed)) return parsed;
-  } catch {}
+  } catch { /* empty */ }
   return specialties.split(",").map((s) => s.trim()).filter(Boolean);
 }
 

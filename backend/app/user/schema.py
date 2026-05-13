@@ -40,6 +40,14 @@ class ClientCreate(ClientBase):
     pass
 
 
+class ClientUpdate(BaseModel):
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    phone: Optional[str] = None
+    city: Optional[str] = None
+    region: Optional[str] = None
+
+
 class ClientResponse(ClientBase):
     user_id: int
 

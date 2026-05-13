@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import Sidebar from "../../components/layout/Sidebar";
 import Navbar from "../../components/layout/Navbar";
 import { useAuth } from "../../hooks/useAuth";
@@ -41,7 +41,6 @@ function renderStars(rating) {
 
 export default function MyReviewsPage() {
   const { token } = useAuth();
-  const navigate = useNavigate();
   const [reviews, setReviews] = useState([]);
   const [lawyers, setLawyers] = useState({});
   const [loading, setLoading] = useState(true);

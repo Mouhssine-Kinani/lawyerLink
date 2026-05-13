@@ -90,7 +90,8 @@ export default function LawyerListPage() {
   };
 
   useEffect(() => {
-    fetchLawyers();
+    const id = setTimeout(() => fetchLawyers(), 0);
+    return () => clearTimeout(id);
   }, [sortBy]);
 
   const handleSpecialtyChange = (specialty) => {

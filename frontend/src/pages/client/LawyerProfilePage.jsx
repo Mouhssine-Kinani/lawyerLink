@@ -19,7 +19,7 @@ function parseSpecialties(specialties) {
   try {
     const parsed = JSON.parse(specialties);
     if (Array.isArray(parsed)) return parsed;
-  } catch {}
+  } catch { /* empty */ }
   return specialties.split(",").map((s) => s.trim()).filter(Boolean);
 }
 
@@ -55,8 +55,6 @@ export default function LawyerProfilePage() {
 
   useEffect(() => {
     if (!id) return;
-    setLoading(true);
-    setError(null);
     Promise.all([
       lawyerApi.getLawyerById(id),
       lawyerApi.getLawyerReviews(id),
@@ -111,7 +109,6 @@ export default function LawyerProfilePage() {
   }
 
   const specialties = parseSpecialties(lawyer.specialties);
-  const ratingPercent = lawyer.rating_avg ? Math.round(lawyer.rating_avg * 20) : null;
   const fullName = [lawyer.first_name, lawyer.last_name].filter(Boolean).join(" ") || "Legal Professional";
   const profileImg = imageUrl(lawyer.image_url) || PLACEHOLDER_AVATAR;
   const email = lawyer.email || "N/A";
