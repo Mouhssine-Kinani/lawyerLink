@@ -196,7 +196,7 @@ export default function LawyerProfilePage() {
                     to={`/client/reviews?lawyerId=${id}`}
                     className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold transition-all ${
                       reviewStatus?.can_review || reviewStatus?.has_review
-                        ? "bg-white/10 text-white hover:bg-white/20 hover:scale-[1.02] active:scale-[0.98] border border-white/20"
+                        ? "bg-white/10 text-white hover:bg-white/20 hover:scale-[1.02] active:scale-[0.98] border border-white/20 cursor-pointer"
                         : "bg-white/5 text-white/35 border border-white/10 cursor-not-allowed"
                     }`}
                     onClick={(e) => {
@@ -334,18 +334,26 @@ export default function LawyerProfilePage() {
                     <p className="text-on-surface-variant leading-relaxed">&ldquo;{review.comment || "Excellent legal service."}&rdquo;</p>
                   </div>
                   <div className="mt-8 flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-full bg-surface-container-high overflow-hidden">
-                      {review.client_image_url ? (
-                        <img className="w-full h-full object-cover" alt="Client avatar" src={imageUrl(review.client_image_url)} />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-primary-container text-on-primary-container font-bold text-sm">
-                          {((review.client_first_name?.[0] || "") + (review.client_last_name?.[0] || "")) || "C"}
+                    {review.is_anonymous ? (
+                      <div className="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center">
+                        <span className="material-symbols-outlined text-outline text-lg">visibility_off</span>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="w-10 h-10 rounded-full bg-surface-container-high overflow-hidden">
+                          {review.client_image_url ? (
+                            <img className="w-full h-full object-cover" alt="Client avatar" src={imageUrl(review.client_image_url)} />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-primary-container text-on-primary-container font-bold text-sm">
+                              {((review.client_first_name?.[0] || "") + (review.client_last_name?.[0] || "")) || "A"}
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold text-on-surface">{[review.client_first_name, review.client_last_name].filter(Boolean).join(" ") || "Client"}</p>
-                    </div>
+                        <div>
+                          <p className="text-sm font-bold text-on-surface">{[review.client_first_name, review.client_last_name].filter(Boolean).join(" ") || "Client"}</p>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
               ))}
@@ -361,7 +369,7 @@ export default function LawyerProfilePage() {
             <div className="flex justify-center">
               <button
                 onClick={() => setShowAllReviews(!showAllReviews)}
-                className="px-12 py-4 border border-outline text-sm font-bold uppercase tracking-widest text-on-surface hover:bg-surface-container-low transition-colors rounded-lg"
+                className="px-12 py-4 border border-outline text-sm font-bold uppercase tracking-widest text-on-surface hover:bg-surface-container-low transition-colors rounded-lg cursor-pointer"
               >
                 {showAllReviews ? "Show Less" : `View All Reviews (${reviews.length})`}
               </button>

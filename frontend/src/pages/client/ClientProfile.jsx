@@ -243,7 +243,7 @@ export default function ClientProfile() {
                   <button
                     type="button"
                     onClick={handleRemoveImage}
-                    className="block px-6 py-3 border border-outline text-sm font-bold rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-all"
+                    className="block px-6 py-3 border border-outline text-sm font-bold rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-all cursor-pointer"
                   >
                     Remove
                   </button>
@@ -343,7 +343,7 @@ export default function ClientProfile() {
             <button
               type="submit"
               disabled={saving}
-              className="px-10 py-3.5 bg-primary text-on-primary font-bold text-sm rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center gap-2"
+              className="px-10 py-3.5 bg-primary text-on-primary font-bold text-sm rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center gap-2 cursor-pointer"
             >
               {saving && (
                 <div className="w-4 h-4 border-2 border-on-primary border-t-transparent rounded-full animate-spin" />

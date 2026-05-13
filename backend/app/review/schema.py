@@ -6,6 +6,7 @@ from datetime import datetime
 class ReviewBase(BaseModel):
     rating: int = Field(ge=1, le=5)
     comment: str
+    is_anonymous: bool = False
 
 
 class ReviewCreate(ReviewBase):
@@ -15,6 +16,7 @@ class ReviewCreate(ReviewBase):
 class ReviewUpdate(BaseModel):
     rating: Optional[int] = Field(default=None, ge=1, le=5)
     comment: Optional[str] = None
+    is_anonymous: Optional[bool] = None
 
 
 class ReviewResponse(ReviewBase):
@@ -23,6 +25,7 @@ class ReviewResponse(ReviewBase):
     lawyer_id: int
     rating: int
     comment: str
+    is_anonymous: bool
     created_at: datetime
     updated_at: Optional[datetime] = None
 

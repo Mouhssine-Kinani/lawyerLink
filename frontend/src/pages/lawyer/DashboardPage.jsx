@@ -5,7 +5,7 @@ export default function DashboardPage() {
   return (
     <div className="flex min-h-screen">
       <Sidebar />
-      <div className="flex-1 flex flex-col ml-72">
+      <div className="flex-1 flex flex-col">
         <Navbar />
         <main className="flex-1 p-10 max-w-7xl mx-auto space-y-10 overflow-y-auto">
           <section className="flex justify-between items-end">
@@ -25,8 +25,8 @@ export default function DashboardPage() {
                   <h3 className="text-2xl font-bold mt-1">$42,850.00</h3>
                 </div>
                 <div className="flex gap-2">
-                  <button className="px-3 py-1 bg-surface-container-low text-xs rounded-lg font-medium">Monthly</button>
-                  <button className="px-3 py-1 text-xs text-on-surface-variant rounded-lg font-medium">Quarterly</button>
+                  <button className="px-3 py-1 bg-surface-container-low text-xs rounded-lg font-medium cursor-pointer">Monthly</button>
+                  <button className="px-3 py-1 text-xs text-on-surface-variant rounded-lg font-medium cursor-pointer">Quarterly</button>
                 </div>
               </div>
               <div className="h-48 flex items-end gap-3 px-4">

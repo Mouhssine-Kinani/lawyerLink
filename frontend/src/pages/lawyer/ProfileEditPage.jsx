@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import Navbar from "../../components/layout/Navbar";
 import Sidebar from "../../components/layout/Sidebar";
-import Footer from "../../components/layout/Footer";
 import { lawyerApi } from "../../api/lawyer.api";
 import { useAuth } from "../../hooks/useAuth";
 
@@ -191,24 +190,27 @@ export default function ProfileEditPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col bg-background text-on-surface font-body antialiased">
-        <Navbar />
-        <main className="flex-1 flex items-center justify-center">
-          <div className="flex flex-col items-center gap-4">
-            <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-            <p className="text-on-surface-variant text-sm font-medium">Loading profile...</p>
-          </div>
-        </main>
-        <Footer />
+      <div className="min-h-screen flex bg-background text-on-surface font-body antialiased">
+        <Sidebar />
+        <div className="flex-1 flex flex-col min-w-0">
+          <Navbar />
+          <main className="flex-1 flex items-center justify-center">
+            <div className="flex flex-col items-center gap-4">
+              <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+              <p className="text-on-surface-variant text-sm font-medium">Loading profile...</p>
+            </div>
+          </main>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-background text-on-surface font-body antialiased">
-      <Navbar />
-      {/* <Sidebar/> */}
-      <main className="flex-1 max-w-4xl mx-auto w-full px-8 py-12 lg:py-20">
+    <div className="min-h-screen flex bg-background text-on-surface font-body antialiased">
+      <Sidebar />
+      <div className="flex-1 flex flex-col min-w-0">
+        <Navbar />
+        <main className="flex-1 max-w-4xl mx-auto w-full px-8 py-12 lg:py-20">
         <div className="mb-10">
           <h1 className="text-3xl font-bold tracking-tight text-on-surface">Edit Profile</h1>
           <p className="text-on-surface-variant mt-2">Update your professional information</p>
@@ -249,7 +251,7 @@ export default function ProfileEditPage() {
                   <button
                     type="button"
                     onClick={handleRemoveImage}
-                    className="block px-6 py-3 border border-outline text-sm font-bold rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-all"
+                    className="block px-6 py-3 border border-outline text-sm font-bold rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-all cursor-pointer"
                   >
                     Remove
                   </button>
@@ -382,7 +384,7 @@ export default function ProfileEditPage() {
             <button
               type="submit"
               disabled={saving}
-              className="px-10 py-3.5 bg-primary text-on-primary font-bold text-sm rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center gap-2"
+              className="px-10 py-3.5 bg-primary text-on-primary font-bold text-sm rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center gap-2 cursor-pointer"
             >
               {saving && <div className="w-4 h-4 border-2 border-on-primary border-t-transparent rounded-full animate-spin" />}
               {saving ? "Saving..." : "Save Changes"}
@@ -396,7 +398,7 @@ export default function ProfileEditPage() {
           </div>
         </form>
       </main>
-      <Footer />
+      </div>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import Swal from "sweetalert2";
 import Sidebar from "../../components/layout/Sidebar";
 import Navbar from "../../components/layout/Navbar";
 import { useAuth } from "../../hooks/useAuth";
@@ -136,7 +137,26 @@ export default function MyReservationsPage() {
   }, [activeFilter, token]);
 
   async function handleCancel(reservationId) {
-    if (!window.confirm("Cancel this reservation?")) return;
+    const result = await Swal.fire({
+      title: "Cancel Reservation?",
+      text: "This action cannot be undone. Are you sure you want to cancel this reservation?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#b42318",
+      cancelButtonColor: "#64748b",
+      confirmButtonText: "Yes, cancel it",
+      cancelButtonText: "Keep it",
+      background: "#fafcff",
+      backdrop: "rgba(0,0,0,0.4)",
+      customClass: {
+        title: "text-on-surface text-lg font-bold",
+        htmlContainer: "text-on-surface-variant text-sm",
+        confirmButton: "px-6 py-2.5 rounded-lg text-sm font-bold shadow-lg",
+        cancelButton: "px-6 py-2.5 rounded-lg text-sm font-bold",
+        popup: "rounded-2xl ambient-shadow",
+      },
+    });
+    if (!result.isConfirmed) return;
     setCancelling(reservationId);
     try {
       await reservationApi.cancelReservation(reservationId, token);
@@ -201,7 +221,7 @@ export default function MyReservationsPage() {
                 <button
                   key={f}
                   onClick={() => setActiveFilter(f)}
-                  className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${
+                  className={`px-6 py-2 rounded-lg text-sm font-bold transition-all cursor-pointer ${
                     activeFilter === f
                       ? "bg-surface-container-lowest shadow-sm text-primary"
                       : "text-on-surface-variant hover:text-primary font-semibold"
@@ -320,7 +340,7 @@ export default function MyReservationsPage() {
                           <button
                             onClick={() => handleCancel(r.id)}
                             disabled={cancelling === r.id}
-                            className="flex-1 bg-error text-on-error py-2 rounded-lg text-xs font-bold hover:opacity-90 transition-opacity disabled:opacity-50"
+                            className="flex-1 bg-error text-on-error py-2 rounded-lg text-xs font-bold hover:opacity-90 transition-opacity disabled:opacity-50 cursor-pointer"
                           >
                             {cancelling === r.id ? "Cancelling..." : "Cancel"}
                           </button>
@@ -362,14 +382,14 @@ export default function MyReservationsPage() {
               <div className="flex gap-2">
                 <button
                   disabled
-                  className="p-2 rounded-lg hover:bg-surface-container-low text-on-surface-variant disabled:opacity-50"
+                  className="p-2 rounded-lg hover:bg-surface-container-low text-on-surface-variant disabled:opacity-50 cursor-pointer"
                 >
                   <span className="material-symbols-outlined">chevron_left</span>
                 </button>
-                <button className="px-4 py-2 rounded-lg bg-surface-container-low text-primary font-bold text-sm">
+                <button className="px-4 py-2 rounded-lg bg-surface-container-low text-primary font-bold text-sm cursor-pointer">
                   1
                 </button>
-                <button className="p-2 rounded-lg hover:bg-surface-container-low text-on-surface-variant">
+                <button className="p-2 rounded-lg hover:bg-surface-container-low text-on-surface-variant cursor-pointer">
                   <span className="material-symbols-outlined">chevron_right</span>
                 </button>
               </div>

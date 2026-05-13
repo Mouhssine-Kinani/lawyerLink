@@ -5,8 +5,8 @@ const navConfig = {
   admin: [
     { path: "/admin/dashboard", icon: "dashboard", label: "Dashboard" },
     { path: "/admin/users", icon: "person", label: "Users" },
-    { path: "/admin/lawyers/approval", icon: "gavel", label: "Lawyer Approval" },
-    { path: "/admin/reservations", icon: "event_available", label: "Reservations" },
+    // { path: "/admin/lawyers/approval", icon: "gavel", label: "Lawyer Approval" },
+    // { path: "/admin/reservations", icon: "event_available", label: "Reservations" },
   ],
   lawyer: [
     { path: "/lawyer/dashboard", icon: "dashboard", label: "Dashboard" },

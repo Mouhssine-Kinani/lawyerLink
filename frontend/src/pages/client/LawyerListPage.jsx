@@ -128,7 +128,7 @@ export default function LawyerListPage() {
         <aside className="w-80 glass-sidebar sticky top-[73px] h-[calc(100vh-73px)] border-r border-surface-container-low p-8 hidden lg:block overflow-y-auto">
           <div className="flex items-center justify-between mb-10">
             <h2 className="font-headline font-bold text-lg text-on-surface">Filters</h2>
-            <button onClick={handleClearFilters} className="text-xs font-label font-semibold text-secondary tracking-widest uppercase">Clear All</button>
+            <button onClick={handleClearFilters} className="text-xs font-label font-semibold text-secondary tracking-widest uppercase cursor-pointer">Clear All</button>
           </div>
           <div className="space-y-10">
             <div className="space-y-4">
@@ -141,7 +141,7 @@ export default function LawyerListPage() {
                       <button
                         type="button"
                         onClick={() => handleSpecialtyChange(s)}
-                        className="w-3.5 h-3.5 flex items-center justify-center rounded-full hover:bg-primary/20 transition-colors"
+                        className="w-3.5 h-3.5 flex items-center justify-center rounded-full hover:bg-primary/20 transition-colors cursor-pointer"
                       >
                         <span className="material-symbols-outlined text-[10px]">close</span>
                       </button>
@@ -263,7 +263,7 @@ export default function LawyerListPage() {
             </div>
             <button
               onClick={handleApplyFilters}
-              className="w-full py-3 bg-primary text-on-primary font-bold text-sm rounded-lg hover:opacity-90 transition-opacity"
+              className="w-full py-3 bg-primary text-on-primary font-bold text-sm rounded-lg hover:opacity-90 transition-opacity cursor-pointer"
             >
               Apply Filters
             </button>
@@ -285,19 +285,19 @@ export default function LawyerListPage() {
             <div className="flex items-center gap-4 bg-surface-container-low p-1 rounded-lg">
               <button
                 onClick={() => setSortBy("rating")}
-                className={`px-4 py-2 text-sm font-semibold ${sortBy === "rating" ? "text-primary bg-surface-container-lowest rounded shadow-sm" : "font-medium text-on-surface-variant hover:text-primary transition-colors"}`}
+                className={`px-4 py-2 text-sm font-semibold cursor-pointer ${sortBy === "rating" ? "text-primary bg-surface-container-lowest rounded shadow-sm" : "font-medium text-on-surface-variant hover:text-primary transition-colors"}`}
               >
                 Highest Rated
               </button>
               <button
                 onClick={() => setSortBy("rate")}
-                className={`px-4 py-2 text-sm ${sortBy === "rate" ? "font-semibold text-primary bg-surface-container-lowest rounded shadow-sm" : "font-medium text-on-surface-variant hover:text-primary transition-colors"}`}
+                className={`px-4 py-2 text-sm cursor-pointer ${sortBy === "rate" ? "font-semibold text-primary bg-surface-container-lowest rounded shadow-sm" : "font-medium text-on-surface-variant hover:text-primary transition-colors"}`}
               >
                 Lowest Price
               </button>
               <button
                 onClick={() => setSortBy("experience")}
-                className={`px-4 py-2 text-sm ${sortBy === "experience" ? "font-semibold text-primary bg-surface-container-lowest rounded shadow-sm" : "font-medium text-on-surface-variant hover:text-primary transition-colors"}`}
+                className={`px-4 py-2 text-sm cursor-pointer ${sortBy === "experience" ? "font-semibold text-primary bg-surface-container-lowest rounded shadow-sm" : "font-medium text-on-surface-variant hover:text-primary transition-colors"}`}
               >
                 Most Experienced
               </button>
@@ -375,12 +375,12 @@ export default function LawyerListPage() {
           {lawyers.length > 0 && (
             <div className="mt-20 flex flex-col items-center gap-8">
               <div className="flex items-center gap-2">
-                <button className="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant text-on-surface hover:bg-surface-container-low transition-all">
+                <button className="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant text-on-surface hover:bg-surface-container-low transition-all cursor-pointer">
                   <span className="material-symbols-outlined">chevron_left</span>
                 </button>
-                <button className="w-10 h-10 flex items-center justify-center rounded-lg bg-primary text-white font-bold">1</button>
+                <button className="w-10 h-10 flex items-center justify-center rounded-lg bg-primary text-white font-bold cursor-pointer">1</button>
                 <span className="px-2 text-outline">...</span>
-                <button className="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant text-on-surface hover:bg-surface-container-low transition-all">
+                <button className="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant text-on-surface hover:bg-surface-container-low transition-all cursor-pointer">
                   <span className="material-symbols-outlined">chevron_right</span>
                 </button>
               </div>

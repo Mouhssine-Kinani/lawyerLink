@@ -124,7 +124,7 @@ export default function LawyerMyReservationsPage() {
                 <button
                   key={f}
                   onClick={() => setActiveFilter(f)}
-                  className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                  className={`px-4 py-2 rounded-lg text-sm font-bold transition-all cursor-pointer ${
                     activeFilter === f
                       ? "bg-surface-container-lowest shadow-sm text-primary"
                       : "text-on-surface-variant hover:text-primary font-semibold"
@@ -230,14 +230,14 @@ export default function LawyerMyReservationsPage() {
                             <button
                               onClick={() => handleAction(r.id, "accepted")}
                               disabled={actionLoading === r.id}
-                              className="flex-1 bg-primary text-on-primary py-2 rounded-lg text-xs font-bold hover:bg-primary-container transition-colors disabled:opacity-50"
+                              className="flex-1 bg-primary text-on-primary py-2 rounded-lg text-xs font-bold hover:bg-primary-container transition-colors disabled:opacity-50 cursor-pointer"
                             >
                               {actionLoading === r.id ? "..." : "Accept"}
                             </button>
                             <button
                               onClick={() => handleAction(r.id, "rejected")}
                               disabled={actionLoading === r.id}
-                              className="flex-1 bg-surface-container-low text-on-surface-variant py-2 rounded-lg text-xs font-bold hover:bg-surface-container-high transition-colors disabled:opacity-50"
+                              className="flex-1 bg-surface-container-low text-on-surface-variant py-2 rounded-lg text-xs font-bold hover:bg-surface-container-high transition-colors disabled:opacity-50 cursor-pointer"
                             >
                               {actionLoading === r.id ? "..." : "Reject"}
                             </button>
@@ -247,7 +247,7 @@ export default function LawyerMyReservationsPage() {
                           <button
                             onClick={() => handleAction(r.id, "completed")}
                             disabled={actionLoading === r.id}
-                            className="flex-1 bg-primary text-on-primary py-2 rounded-lg text-xs font-bold hover:bg-primary-container transition-colors disabled:opacity-50"
+                            className="flex-1 bg-primary text-on-primary py-2 rounded-lg text-xs font-bold hover:bg-primary-container transition-colors disabled:opacity-50 cursor-pointer"
                           >
                             {actionLoading === r.id ? "..." : "Mark Completed"}
                           </button>

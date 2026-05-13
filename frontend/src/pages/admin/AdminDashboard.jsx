@@ -67,7 +67,7 @@ export default function AdminDashboard() {
               <p className="text-sm text-outline">{error}</p>
               <button
                 onClick={() => window.location.reload()}
-                className="px-6 py-2 rounded-xl text-sm font-semibold text-white primary-gradient"
+                className="px-6 py-2 rounded-xl text-sm font-semibold text-white primary-gradient cursor-pointer"
               >
                 Retry
               </button>

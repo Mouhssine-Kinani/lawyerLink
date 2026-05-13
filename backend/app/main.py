@@ -42,6 +42,16 @@ try:
 except Exception:
     pass  # migration is best-effort
 
+try:
+    inspector = inspect(engine)
+    review_cols = [c["name"] for c in inspector.get_columns("reviews")]
+    if "is_anonymous" not in review_cols:
+        with engine.connect() as conn:
+            conn.execute(sql_text("ALTER TABLE reviews ADD COLUMN is_anonymous TINYINT(1) DEFAULT 0 NOT NULL"))
+            conn.commit()
+except Exception:
+    pass  # migration is best-effort
+
 app = FastAPI(
     title="LawyerLink API",
     description="Legal consultation platform with AI assistance",

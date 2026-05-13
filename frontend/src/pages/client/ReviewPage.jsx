@@ -68,12 +68,12 @@ export default function ReviewPage() {
       if (existingReview) {
         await reviewApi.updateReview(
           existingReview.id,
-          { rating, comment },
+          { rating, comment, is_anonymous: anonymous },
           token,
         );
       } else {
         await reviewApi.createReview(
-          { lawyer_id: Number(lawyerId), rating, comment },
+          { lawyer_id: Number(lawyerId), rating, comment, is_anonymous: anonymous },
           token,
         );
       }
@@ -216,7 +216,7 @@ export default function ReviewPage() {
                           <button
                             key={star}
                             type="button"
-                            className="group transition-transform active:scale-95 focus:outline-none"
+                            className="group transition-transform active:scale-95 focus:outline-none cursor-pointer"
                             onMouseEnter={() => setHoverRating(star)}
                             onMouseLeave={() => setHoverRating(0)}
                             onClick={() => setRating(star === rating ? 0 : star)}
@@ -282,7 +282,7 @@ export default function ReviewPage() {
                     <button
                       type="submit"
                       disabled={submitting || rating === 0 || !comment.trim()}
-                      className="w-full md:w-auto px-10 py-4 rounded-lg bg-gradient-to-br from-primary to-primary-container text-white font-bold text-lg shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full md:w-auto px-10 py-4 rounded-lg bg-gradient-to-br from-primary to-primary-container text-white font-bold text-lg shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                     >
                       {submitting ? "Submitting..." : existingReview ? "Update Review" : "Submit Review"}
                     </button>

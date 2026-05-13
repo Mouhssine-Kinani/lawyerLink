@@ -37,7 +37,7 @@ export default function LandingPage() {
                 <span className="material-symbols-outlined text-secondary">translate</span>
                 <input className="w-full bg-transparent border-none focus:ring-0 text-on-surface text-sm placeholder:text-outline" placeholder="Language" type="text" />
               </div>
-              <button className="bg-gradient-to-br from-primary to-primary-container px-8 py-4 rounded-xl text-on-primary font-bold text-sm hover:opacity-95 transition-all flex items-center justify-center gap-2">
+              <button className="bg-gradient-to-br from-primary to-primary-container px-8 py-4 rounded-xl text-on-primary font-bold text-sm hover:opacity-95 transition-all flex items-center justify-center gap-2 cursor-pointer">
                 Search <span className="material-symbols-outlined text-sm">arrow_forward</span>
               </button>
             </div>
@@ -166,32 +166,37 @@ export default function LandingPage() {
                 <p className="text-sm text-on-surface-variant mb-6 line-clamp-2">Specializing in cross-border acquisitions and venture capital structures for Series A-E startups.</p>
                 <div className="flex items-center justify-between pt-6 border-t border-outline-variant/20">
                   <span className="text-lg font-bold text-on-surface">$550<span className="text-sm font-normal text-on-surface-variant">/hr</span></span>
-                  <button className="text-sm font-bold text-primary group-hover:text-secondary transition-colors">Book Profile</button>
+                  <button className="text-sm font-bold text-primary group-hover:text-secondary transition-colors cursor-pointer">Book Profile</button>
+                </div>
+              </div>
+            </div>
+            {/* Attorney Card 2 */}
+            <div className="group bg-surface-container-lowest rounded-2xl p-6 custom-shadow hover:shadow-lg transition-all">
+              <div className="w-full h-48 rounded-xl overflow-hidden bg-surface-container-low mb-5">
+                <img alt="Attorney Marcus Thorne" className="w-full h-full object-cover" src="/images/lawyer2.jpg" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-on-surface mb-1">Marcus Thorne</h3>
+                <p className="text-sm font-semibold text-secondary mb-4 uppercase tracking-wider">Corporate Mergers</p>
+                <p className="text-sm text-on-surface-variant mb-6 line-clamp-2">Specializing in cross-border acquisitions and venture capital structures for Series A-E startups.</p>
+                <div className="flex items-center justify-between pt-6 border-t border-outline-variant/20">
+                  <span className="text-lg font-bold text-on-surface">$550<span className="text-sm font-normal text-on-surface-variant">/hr</span></span>
+                  <button className="text-sm font-bold text-primary group-hover:text-secondary transition-colors cursor-pointer">Book Profile</button>
                 </div>
               </div>
             </div>
             {/* Attorney Card 3 */}
-            <div className="group bg-surface-container-lowest rounded-2xl overflow-hidden shadow-[0_20px_40px_rgba(13,28,46,0.06)] transition-transform hover:-translate-y-2">
-              <div className="relative h-64 overflow-hidden">
-                <img alt="Attorney" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDKAA8_EuPCz7qpxNu4GFd9mIYCHDH6iEqMVQ3sXMnoPzjoWDHDteRh5yMgPfSPblH9jCBoXVfuSYZUbgCTgYdatScUZsm8V2r6v9AqN8Ehk3V2UznfRYRo18E4tkFzs1q9WARZ97uKwwkr50j0MtuJD3UAeygoK5Gk4vNl8v-7eaC1-6ttfdPEQKZts5oOYFfL4tM3KVQPp_H8GkFCdDvBSkrTt6opHc1lVT__jdf6kT4PJ_8dt4EIAUWxsWvRIbHcE-gJdHsZV0V" />
+            <div className="group bg-surface-container-lowest rounded-2xl p-6 custom-shadow hover:shadow-lg transition-all">
+              <div className="w-full h-48 rounded-xl overflow-hidden bg-surface-container-low mb-5">
+                <img alt="Attorney Elena Rodriguez" className="w-full h-full object-cover" src="/images/lawyer3.jpg" />
               </div>
-              <div className="p-8">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="flex text-on-tertiary-container">
-                    <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                    <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                    <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                    <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                    <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 0" }}>star</span>
-                  </div>
-                  <span className="text-xs font-bold text-on-surface-variant">4.8 (210 reviews)</span>
-                </div>
+              <div>
                 <h3 className="text-xl font-bold text-on-surface mb-1">Elena Rodriguez</h3>
                 <p className="text-sm font-semibold text-secondary mb-4 uppercase tracking-wider">Criminal Defense</p>
                 <p className="text-sm text-on-surface-variant mb-6 line-clamp-2">Former federal prosecutor offering aggressive defense for white-collar crimes and civil rights.</p>
                 <div className="flex items-center justify-between pt-6 border-t border-outline-variant/20">
                   <span className="text-lg font-bold text-on-surface">$425<span className="text-sm font-normal text-on-surface-variant">/hr</span></span>
-                  <button className="text-sm font-bold text-primary group-hover:text-secondary transition-colors">Book Profile</button>
+                  <button className="text-sm font-bold text-primary group-hover:text-secondary transition-colors cursor-pointer">Book Profile</button>
                 </div>
               </div>
             </div>
@@ -287,7 +292,7 @@ export default function LandingPage() {
               <p className="text-sm text-on-surface-variant mb-4">Weekly legal insights and platform updates.</p>
               <div className="flex gap-2">
                 <input className="bg-surface-container-high border-none rounded-lg text-sm px-4 py-2 w-full focus:ring-1 focus:ring-secondary/30" placeholder="Email" type="email" />
-                <button className="bg-primary px-4 py-2 rounded-lg text-on-primary">
+                <button className="bg-primary px-4 py-2 rounded-lg text-on-primary cursor-pointer">
                   <span className="material-symbols-outlined text-sm">send</span>
                 </button>
               </div>

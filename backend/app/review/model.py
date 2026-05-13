@@ -1,5 +1,5 @@
 from app.core.database import Base
-from sqlalchemy import Column, BigInteger, Integer, DateTime, Text, ForeignKey
+from sqlalchemy import Column, BigInteger, Boolean, Integer, DateTime, Text, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
@@ -10,6 +10,7 @@ class Review(Base):
     lawyer_id = Column(BigInteger, ForeignKey("lawyers.user_id"), nullable=False)
     rating = Column(Integer, nullable=False)
     comment = Column(Text, nullable=False)
+    is_anonymous = Column(Boolean, server_default="0", nullable=False)
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
     updated_at = Column(DateTime, onupdate=func.now(), nullable=True)
 
