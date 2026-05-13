@@ -77,6 +77,7 @@ export default function LawyerListPage() {
     if (minRate) params.min_rate = minRate;
     if (maxRate) params.max_rate = maxRate;
     if (minRating) params.min_rating = minRating;
+    if (language) params.language = language;
 
     lawyerApi.getLawyers(params)
       .then((data) => {

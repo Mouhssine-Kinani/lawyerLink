@@ -31,6 +31,7 @@ export const lawyerApi = {
     if (params.min_rate) query.append("min_rate", params.min_rate);
     if (params.max_rate) query.append("max_rate", params.max_rate);
     if (params.min_rating) query.append("min_rating", params.min_rating);
+    if (params.language) query.append("language", params.language);
     if (params.sort_by) query.append("sort_by", params.sort_by);
     if (params.limit) query.append("limit", params.limit);
     const qs = query.toString();

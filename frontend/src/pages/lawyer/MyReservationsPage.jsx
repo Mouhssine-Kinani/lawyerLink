@@ -52,6 +52,7 @@ export default function LawyerMyReservationsPage() {
   const [error, setError] = useState(null);
   const [activeFilter, setActiveFilter] = useState("All");
   const [actionLoading, setActionLoading] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   async function loadReservations() {
     if (!token) return;
@@ -88,6 +89,14 @@ export default function LawyerMyReservationsPage() {
     if (activeFilter === "All") return true;
     if (activeFilter === "Confirmed") return r.status === "accepted";
     return r.status === activeFilter.toLowerCase();
+  }).filter((r) => {
+    if (!searchQuery) return true;
+    const q = searchQuery.toLowerCase();
+    const name = `${r.client_first_name || ""} ${r.client_last_name || ""}`.toLowerCase();
+    const email = (r.client_email || "").toLowerCase();
+    const phone = (r.client_phone || "").toLowerCase();
+    const notes = (r.notes || "").toLowerCase();
+    return name.includes(q) || email.includes(q) || phone.includes(q) || notes.includes(q);
   });
 
   return (
@@ -117,6 +126,8 @@ export default function LawyerMyReservationsPage() {
                 className="bg-transparent border-none focus:ring-0 text-sm w-full placeholder:text-outline"
                 type="text"
                 placeholder="Search clients..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
             <div className="flex p-1 bg-surface-container-low rounded-xl">

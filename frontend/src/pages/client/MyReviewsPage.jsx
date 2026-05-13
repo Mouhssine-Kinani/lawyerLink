@@ -54,7 +54,10 @@ export default function MyReviewsPage() {
     setError(null);
     try {
       const data = await reviewApi.getMyReviews(token);
-      setReviews(data || []);
+      const sorted = (data || []).sort(
+        (a, b) => new Date(b.created_at) - new Date(a.created_at),
+      );
+      setReviews(sorted);
 
       const lawyerIds = [...new Set((data || []).map((r) => r.lawyer_id))];
       const results = await Promise.all(

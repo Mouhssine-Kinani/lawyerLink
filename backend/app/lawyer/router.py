@@ -116,6 +116,7 @@ def list_lawyers_public(
     min_rate: Optional[float] = Query(None),
     max_rate: Optional[float] = Query(None),
     min_rating: Optional[float] = Query(None),
+    language: Optional[str] = Query(None),
     sort_by: Optional[str] = Query(None),
     limit: int = Query(50, ge=1, le=100),
     db: Session = Depends(get_db)
@@ -132,6 +133,11 @@ def list_lawyers_public(
         specs = [s.strip() for s in specialty.split(",") if s.strip()]
         if specs:
             filters = [Lawyer.specialties.ilike(f"%{s}%") for s in specs]
+            query = query.filter(or_(*filters))
+    if language:
+        langs = [l.strip() for l in language.split(",") if l.strip()]
+        if langs:
+            filters = [Lawyer.languages.ilike(f"%{l}%") for l in langs]
             query = query.filter(or_(*filters))
     if city:
         query = query.filter(

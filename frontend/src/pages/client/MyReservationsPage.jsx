@@ -168,17 +168,19 @@ export default function MyReservationsPage() {
     }
   }
 
-  const displayed = reservations.filter((r) => {
-    if (!searchQuery) return true;
-    const q = searchQuery.toLowerCase();
-    const lawyer = lawyers[r.lawyer_id];
-    const name = lawyer
-      ? `${lawyer.first_name || ""} ${lawyer.last_name || ""}`.toLowerCase()
-      : "";
-    const firm = (lawyer?.firm || "").toLowerCase();
-    const notes = (r.notes || "").toLowerCase();
-    return name.includes(q) || firm.includes(q) || notes.includes(q);
-  });
+  const displayed = reservations
+    .filter((r) => {
+      if (!searchQuery) return true;
+      const q = searchQuery.toLowerCase();
+      const lawyer = lawyers[r.lawyer_id];
+      const name = lawyer
+        ? `${lawyer.first_name || ""} ${lawyer.last_name || ""}`.toLowerCase()
+        : "";
+      const firm = (lawyer?.firm || "").toLowerCase();
+      const notes = (r.notes || "").toLowerCase();
+      return name.includes(q) || firm.includes(q) || notes.includes(q);
+    })
+    .sort((a, b) => new Date(b.reservation_date) - new Date(a.reservation_date));
 
   return (
     <div className="flex min-h-screen">
