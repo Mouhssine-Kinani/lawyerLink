@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import Optional
-from datetime import date, datetime
+from datetime import date, datetime, time, timedelta
 
 from app.core.database import get_db
 from app.core.dependencies import require_role
@@ -13,9 +13,96 @@ from app.review.schema import ReviewResponse
 from app.reservation.model import Reservation, ReservationStatus
 from app.reservation.schema import ReservationUpdate, ReservationResponse
 from app.payment.model import PaymentTransaction, PaymentType, PaymentStatus
-from app.user.model import Client
 
 router = APIRouter(prefix="/lawyer", tags=["Lawyer"])
+
+# ──────────────────────────────────────────────────────────────
+# LIST ALL UNIQUE SPECIALTIES (Public)
+# ──────────────────────────────────────────────────────────────
+
+@router.get("/specialties")
+def list_specialties(db: Session = Depends(get_db)):
+    from sqlalchemy import text
+    rows = db.execute(
+        text("SELECT DISTINCT specialties FROM lawyers WHERE is_active = TRUE")
+    ).all()
+    seen = set()
+    result = []
+    for (row,) in rows:
+        if not row:
+            continue
+        try:
+            import json
+            specs = json.loads(row) if isinstance(row, str) else row
+        except (json.JSONDecodeError, TypeError):
+            specs = str(row).split(",")
+        if isinstance(specs, list):
+            for s in specs:
+                s = s.strip()
+                if s and s not in seen:
+                    seen.add(s)
+                    result.append(s)
+    return sorted(result)
+
+
+# ──────────────────────────────────────────────────────────────
+# SEARCH LAWYERS (Public - autocomplete)
+# ──────────────────────────────────────────────────────────────
+
+@router.get("/search", response_model=list[dict])
+def search_lawyers(
+    q: str = Query(..., min_length=1),
+    limit: int = Query(10, ge=1, le=20),
+    db: Session = Depends(get_db),
+):
+    from sqlalchemy import or_
+    query = (
+        db.query(Lawyer, User)
+        .join(User, User.id == Lawyer.user_id)
+        .filter(Lawyer.is_active == True)
+        .filter(
+            or_(
+                Lawyer.first_name.ilike(f"%{q}%"),
+                Lawyer.last_name.ilike(f"%{q}%"),
+                Lawyer.firm.ilike(f"%{q}%"),
+                Lawyer.specialties.ilike(f"%{q}%"),
+            )
+        )
+        .limit(limit)
+        .all()
+    )
+    return [
+        {
+            "user_id": lawyer.user_id,
+            "first_name": lawyer.first_name,
+            "last_name": lawyer.last_name,
+            "firm": lawyer.firm,
+            "specialties": lawyer.specialties,
+            "image_url": user.image_url,
+        }
+        for lawyer, user in query
+    ]
+
+
+# ──────────────────────────────────────────────────────────────
+# Auto-complete reservations whose date+time has passed
+# ──────────────────────────────────────────────────────────────
+
+def auto_complete_reservations(db: Session):
+    now = datetime.now()
+    completed = (
+        db.query(Reservation)
+        .filter(
+            Reservation.reservation_date <= now,
+            Reservation.status == ReservationStatus.accepted,
+        )
+        .all()
+    )
+    for r in completed:
+        r.status = ReservationStatus.completed
+    if completed:
+        db.commit()
+    return len(completed)
 
 
 # ──────────────────────────────────────────────────────────────
@@ -125,6 +212,103 @@ def get_lawyer_public(
 
 
 # ──────────────────────────────────────────────────────────────
+# GET LAWYER AVAILABILITY (Public - time slots for a given date)
+# ──────────────────────────────────────────────────────────────
+
+@router.get("/public/{lawyer_id}/availability")
+def get_lawyer_availability(
+    lawyer_id: int,
+    date_str: str = Query(..., alias="date"),
+    db: Session = Depends(get_db)
+):
+    lawyer = db.query(Lawyer).filter(Lawyer.user_id == lawyer_id).first()
+    if not lawyer:
+        raise HTTPException(404, "Lawyer not found")
+
+    try:
+        target_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+    except ValueError:
+        raise HTTPException(400, "Invalid date format. Use YYYY-MM-DD")
+
+    # Generate hourly time slots from 9 AM to 5 PM
+    slots = []
+    for hour in range(9, 18):
+        slot_dt = datetime.combine(target_date, time(hour, 0))
+
+        is_booked = bool(
+            db.query(Reservation)
+            .filter(
+                Reservation.lawyer_id == lawyer_id,
+                Reservation.reservation_date == slot_dt,
+                Reservation.status.in_([ReservationStatus.pending, ReservationStatus.accepted]),
+            )
+            .first()
+        )
+
+        ampm = "AM" if hour < 12 else "PM"
+        display_hour = hour if hour <= 12 else hour - 12
+        slots.append({
+            "time": f"{display_hour:02d}:00 {ampm}",
+            "datetime": slot_dt.isoformat(),
+            "available": not is_booked,
+        })
+
+    return {"date": date_str, "slots": slots}
+
+
+# ──────────────────────────────────────────────────────────────
+# GET LAWYER MONTH AVAILABILITY (Public - which dates are fully booked)
+# ──────────────────────────────────────────────────────────────
+
+@router.get("/public/{lawyer_id}/availability/month")
+def get_lawyer_month_availability(
+    lawyer_id: int,
+    year: int = Query(...),
+    month: int = Query(..., ge=1, le=12),
+    db: Session = Depends(get_db)
+):
+    lawyer = db.query(Lawyer).filter(Lawyer.user_id == lawyer_id).first()
+    if not lawyer:
+        raise HTTPException(404, "Lawyer not found")
+
+    # Calculate month range
+    if month == 12:
+        next_month = datetime(year + 1, 1, 1)
+    else:
+        next_month = datetime(year, month + 1, 1)
+    first_day = datetime(year, month, 1)
+    last_day = next_month - timedelta(days=1)
+
+    # Get all booked reservations for this lawyer in this month
+    booked_slots = db.query(Reservation.reservation_date).filter(
+        Reservation.lawyer_id == lawyer_id,
+        Reservation.reservation_date >= first_day,
+        Reservation.reservation_date <= last_day,
+        Reservation.status.in_([ReservationStatus.pending, ReservationStatus.accepted]),
+    ).all()
+
+    booked_set = {row.reservation_date.replace(tzinfo=None) for row in booked_slots}
+
+    today = date.today()
+    fully_booked = []
+
+    for day in range(1, last_day.day + 1):
+        d = date(year, month, day)
+        if d < today:
+            continue
+        all_booked = True
+        for hour in range(9, 18):
+            slot_dt = datetime.combine(d, time(hour, 0))
+            if slot_dt not in booked_set:
+                all_booked = False
+                break
+        if all_booked:
+            fully_booked.append(d.isoformat())
+
+    return {"year": year, "month": month, "fully_booked_dates": fully_booked}
+
+
+# ──────────────────────────────────────────────────────────────
 # UPDATE LAWYER PROFILE
 # ──────────────────────────────────────────────────────────────
 
@@ -230,6 +414,9 @@ def get_my_reservations(
     lawyer = db.query(Lawyer).filter(Lawyer.user_id == current_user.id).first()
     if not lawyer:
         raise HTTPException(404, "Lawyer profile not found")
+
+    # Auto-complete past accepted reservations
+    auto_complete_reservations(db)
 
     query = (
         db.query(Reservation)
