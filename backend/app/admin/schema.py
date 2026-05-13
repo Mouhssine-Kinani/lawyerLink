@@ -40,6 +40,19 @@ class AdminUserResponse(BaseModel):
     class Config:
         from_attributes = True
 
+class AdminClientResponse(BaseModel):
+    user_id: int
+    email: str
+    first_name: str
+    last_name: str
+    phone: str
+    city: Optional[str] = None
+    region: Optional[str] = None
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
 class AdminLawyerResponse(BaseModel):
     user_id: int
     email: str
@@ -54,6 +67,23 @@ class AdminLawyerResponse(BaseModel):
     
     class Config:
         from_attributes = True
+
+class PaginatedClients(BaseModel):
+    items: list[AdminClientResponse]
+    total: int
+
+class PaginatedLawyers(BaseModel):
+    items: list[AdminLawyerResponse]
+    total: int
+
+class MonthlyDataPoint(BaseModel):
+    month: str
+    value: float
+
+class DashboardCharts(BaseModel):
+    subscription_revenue: list[MonthlyDataPoint]
+    boost_revenue: list[MonthlyDataPoint]
+    reservations: list[MonthlyDataPoint]
 
 class DashboardStats(BaseModel):
     total_users: int

@@ -48,3 +48,14 @@ class ReservationWithClientResponse(ReservationResponse):
     client_email: Optional[str] = None
     client_phone: Optional[str] = None
     client_image_url: Optional[str] = None
+
+
+class ReservationAdminResponse(ReservationResponse):
+    client_first_name: Optional[str] = None
+    client_last_name: Optional[str] = None
+    client_email: Optional[str] = None
+    client_phone: Optional[str] = None
+    lawyer_first_name: Optional[str] = None
+    lawyer_last_name: Optional[str] = None
+    lawyer_firm: Optional[str] = None
+    lawyer_email: Optional[str] = None

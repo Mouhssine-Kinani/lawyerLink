@@ -32,6 +32,7 @@ import LawyerBoostPage from "./pages/lawyer/BoostPage";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import UsersPage from "./pages/admin/UsersPage";
 import LawyerApprovalPage from "./pages/admin/LawyerApprovalPage";
+import ReservationsPage from "./pages/admin/ReservationsPage";
 
 // =============================================================================
 // Route definitions
@@ -108,6 +109,9 @@ export default function App() {
           />
           <Route path="/admin/lawyers/approval"
             element={<RoleRoute requiredRole="admin"><LawyerApprovalPage /></RoleRoute>}
+          />
+          <Route path="/admin/reservations"
+            element={<RoleRoute requiredRole="admin"><ReservationsPage /></RoleRoute>}
           />
 
           {/* ── Fallback: redirect unknown paths to home ─────────────────── */}

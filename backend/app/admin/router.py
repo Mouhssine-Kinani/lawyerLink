@@ -10,11 +10,14 @@ from app.core.security import hash_password
 from app.user.model import User, Client, Role
 from app.lawyer.model import Lawyer
 from app.reservation.model import Reservation, ReservationStatus
+from app.reservation.schema import ReservationAdminResponse
 from app.review.model import Review
-from app.payment.model import Subscription, SubscriptionStatus, PaymentTransaction, PaymentStatus, PaymentType
+from app.payment.model import Subscription, SubscriptionStatus, BoostPayment
 from app.admin.schema import (
     CreateUserRequest, UpdateUserRequest, 
-    AdminUserResponse, AdminLawyerResponse, DashboardStats
+    AdminUserResponse, AdminLawyerResponse, AdminClientResponse,
+    DashboardStats, DashboardCharts, MonthlyDataPoint,
+    PaginatedClients, PaginatedLawyers
 )
 
 router = APIRouter(prefix="/admin",tags=["Admin"])
@@ -37,14 +40,29 @@ def get_dashboard_stats(current_user:User = Depends(require_role("admin")) ,db:S
     average_rating_result = db.query(func.avg(Lawyer.rating_avg)).filter(Lawyer.rating_count > 0).first()
     avg_rating = float(average_rating_result[0]) if average_rating_result[0] else None
 
-    subscription_revenue = db.query(func.sum(PaymentTransaction.amount)).filter(
-        PaymentTransaction.type == PaymentType.subscription,
-        PaymentTransaction.status == PaymentStatus.success
+    from sqlalchemy import case as sql_case
+
+    subscription_revenue = db.query(
+        func.sum(
+            sql_case(
+                (Subscription.plan_type == "pro", 299),
+                (Subscription.plan_type == "elite", 499),
+                else_=0
+            )
+        )
+    ).filter(
+        Subscription.status.in_([SubscriptionStatus.active, SubscriptionStatus.cancelled])
     ).scalar() or 0
 
-    boost_revenue = db.query(func.sum(PaymentTransaction.amount)).filter(
-        PaymentTransaction.type == PaymentType.boost,
-        PaymentTransaction.status == PaymentStatus.success
+    boost_revenue = db.query(
+        func.sum(
+            sql_case(
+                (BoostPayment.boost_level == 1, 149),
+                (BoostPayment.boost_level == 2, 269),
+                (BoostPayment.boost_level == 3, 499),
+                else_=0
+            )
+        )
     ).scalar() or 0
 
     total_revenue = float(subscription_revenue) + float(boost_revenue)
@@ -62,7 +80,49 @@ def get_dashboard_stats(current_user:User = Depends(require_role("admin")) ,db:S
         total_boost_revenue = float(boost_revenue),
         total_revenue = total_revenue
     )
-    
+
+@router.get("/dashboard/charts", response_model=DashboardCharts)
+def get_dashboard_charts(
+    current_user: User = Depends(require_role("admin")),
+    db: Session = Depends(get_db)
+):
+    from sqlalchemy import extract, case as sql_case
+
+    sub_rev = db.query(
+        func.concat(extract('year', Subscription.start_date), '-', func.lpad(extract('month', Subscription.start_date), 2, '0')).label('month'),
+        func.sum(
+            sql_case(
+                (Subscription.plan_type == "pro", 299),
+                (Subscription.plan_type == "elite", 499),
+                else_=0
+            )
+        ).label('value')
+    ).filter(
+        Subscription.status.in_([SubscriptionStatus.active, SubscriptionStatus.cancelled])
+    ).group_by('month').order_by('month').all()
+
+    boost_rev = db.query(
+        func.concat(extract('year', BoostPayment.starts_at), '-', func.lpad(extract('month', BoostPayment.starts_at), 2, '0')).label('month'),
+        func.sum(
+            sql_case(
+                (BoostPayment.boost_level == 1, 149),
+                (BoostPayment.boost_level == 2, 269),
+                (BoostPayment.boost_level == 3, 499),
+                else_=0
+            )
+        ).label('value')
+    ).group_by('month').order_by('month').all()
+
+    reservations = db.query(
+        func.concat(extract('year', Reservation.created_at), '-', func.lpad(extract('month', Reservation.created_at), 2, '0')).label('month'),
+        func.count(Reservation.id).label('value')
+    ).group_by('month').order_by('month').all()
+
+    return DashboardCharts(
+        subscription_revenue=[MonthlyDataPoint(month=r.month, value=float(r.value)) for r in sub_rev],
+        boost_revenue=[MonthlyDataPoint(month=r.month, value=float(r.value)) for r in boost_rev],
+        reservations=[MonthlyDataPoint(month=r.month, value=float(r.value)) for r in reservations],
+    )
 
 # ──────────────────────────────────────────────────────────────
 # USER MANAGEMENT
@@ -189,10 +249,40 @@ def delete_user(user_id:int,current_user:User = Depends(require_role("admin")),p
     
 
 # ──────────────────────────────────────────────────────────────
+# CLIENT MANAGEMENT (Admin)
+# ──────────────────────────────────────────────────────────────
+
+@router.get("/clients", response_model=PaginatedClients)
+def get_all_clients(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(15, ge=1, le=100),
+    current_user: User = Depends(require_role("admin")),
+    db: Session = Depends(get_db)
+):
+    query = db.query(Client, User).join(User, User.id == Client.user_id)
+    total = query.count()
+    results = query.order_by(User.created_at.desc()).offset(skip).limit(limit).all()
+
+    clients = []
+    for client, user in results:
+        clients.append(AdminClientResponse(
+            user_id=client.user_id,
+            email=user.email,
+            first_name=client.first_name,
+            last_name=client.last_name,
+            phone=client.phone,
+            city=user.city,
+            region=user.region,
+            created_at=user.created_at,
+        ))
+    return PaginatedClients(items=clients, total=total)
+
+
+# ──────────────────────────────────────────────────────────────
 # RESERVATION MANAGEMENT (Admin oversee)
 # ──────────────────────────────────────────────────────────────
     
-@router.get("/reservations")
+@router.get("/reservations", response_model=list[ReservationAdminResponse])
 def get_all_reservations(
     status: Optional[str] = Query(None, description="Filter by status"),
     limit: int = Query(100, ge=1, le=500),
@@ -207,16 +297,41 @@ def get_all_reservations(
         query = query.filter(Reservation.status == status)
 
     reservations = query.order_by(Reservation.created_at.desc()).limit(limit).all()
-    return reservations
+
+    result = []
+    for r in reservations:
+        client = db.query(Client).filter(Client.user_id == r.client_id).first()
+        client_user = db.query(User).filter(User.id == r.client_id).first() if client else None
+        lawyer = db.query(Lawyer).filter(Lawyer.user_id == r.lawyer_id).first()
+        lawyer_user = db.query(User).filter(User.id == r.lawyer_id).first() if lawyer else None
+        result.append(ReservationAdminResponse(
+            id=r.id,
+            client_id=r.client_id,
+            lawyer_id=r.lawyer_id,
+            reservation_date=r.reservation_date,
+            status=r.status,
+            notes=r.notes,
+            created_at=r.created_at,
+            client_first_name=client.first_name if client else None,
+            client_last_name=client.last_name if client else None,
+            client_email=client_user.email if client_user else None,
+            client_phone=client.phone if client else None,
+            lawyer_first_name=lawyer.first_name if lawyer else None,
+            lawyer_last_name=lawyer.last_name if lawyer else None,
+            lawyer_firm=lawyer.firm if lawyer else None,
+            lawyer_email=lawyer_user.email if lawyer_user else None,
+        ))
+    return result
     
     
 # ──────────────────────────────────────────────────────────────
 # LAWYER MANAGEMENT
 # ──────────────────────────────────────────────────────────────
-@router.get("/lawyers", response_model=List[AdminLawyerResponse])
+@router.get("/lawyers", response_model=PaginatedLawyers)
 def get_all_lawyers(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(15, ge=1, le=100),
     is_active: Optional[bool] = Query(None, description="Filter by active status"),
-    limit: int = Query(100, ge=1, le=500),
     current_user: User = Depends(require_role("admin")),
     db: Session = Depends(get_db)
 ):
@@ -225,13 +340,13 @@ def get_all_lawyers(
     if is_active is not None:
         query = query.filter(Lawyer.is_active == is_active)
     
-    results = query.limit(limit).all()
+    total = query.count()
+    results = query.order_by(User.created_at.desc()).offset(skip).limit(limit).all()
     
     today = datetime.now().date()
     lawyers = []
     
     for lawyer, user in results:
-        # Check if lawyer has active subscription
         subscription = db.query(Subscription).filter(
             Subscription.lawyer_id == lawyer.user_id,
             Subscription.status == SubscriptionStatus.active,
@@ -252,7 +367,7 @@ def get_all_lawyers(
             subscription_status=subscription.status.value if subscription else "inactive"
         ))
     
-    return lawyers
+    return PaginatedLawyers(items=lawyers, total=total)
 
 @router.patch("/lawyers/{lawyer_id}/toggle-active")
 def toggle_lawyer_active(

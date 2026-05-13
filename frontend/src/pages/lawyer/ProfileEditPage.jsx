@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import Navbar from "../../components/layout/Navbar";
+import Sidebar from "../../components/layout/Sidebar";
 import Footer from "../../components/layout/Footer";
 import { lawyerApi } from "../../api/lawyer.api";
 import { useAuth } from "../../hooks/useAuth";
@@ -206,6 +207,7 @@ export default function ProfileEditPage() {
   return (
     <div className="min-h-screen flex flex-col bg-background text-on-surface font-body antialiased">
       <Navbar />
+      {/* <Sidebar/> */}
       <main className="flex-1 max-w-4xl mx-auto w-full px-8 py-12 lg:py-20">
         <div className="mb-10">
           <h1 className="text-3xl font-bold tracking-tight text-on-surface">Edit Profile</h1>

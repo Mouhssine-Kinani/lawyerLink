@@ -28,4 +28,18 @@ export const adminApi = {
   getDashboardStats: async () => {
     return apiRequest("/admin/dashboard");
   },
+  getDashboardCharts: async () => {
+    return apiRequest("/admin/dashboard/charts");
+  },
+  getClients: async (skip = 0, limit = 15) => {
+    return apiRequest(`/admin/clients?skip=${skip}&limit=${limit}`);
+  },
+  getLawyers: async (skip = 0, limit = 15) => {
+    return apiRequest(`/admin/lawyers?skip=${skip}&limit=${limit}`);
+  },
+  getReservations: async (status = null) => {
+    let path = "/admin/reservations";
+    if (status) path += `?status=${status}`;
+    return apiRequest(path);
+  },
 };

@@ -3,6 +3,10 @@ import Navbar from "../../components/layout/Navbar";
 import Sidebar from "../../components/layout/Sidebar";
 import { adminApi } from "../../api/admin.api";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
+import {
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
+  LineChart, Line, CartesianGrid,
+} from "recharts";
 
 function formatCurrency(amount) {
   return new Intl.NumberFormat("en-US", {
@@ -19,13 +23,19 @@ function formatNumber(num) {
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState(null);
+  const [charts, setCharts] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    adminApi
-      .getDashboardStats()
-      .then((data) => setStats(data))
+    Promise.all([
+      adminApi.getDashboardStats(),
+      adminApi.getDashboardCharts(),
+    ])
+      .then(([statsData, chartsData]) => {
+        setStats(statsData);
+        setCharts(chartsData);
+      })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, []);
@@ -113,28 +123,64 @@ export default function AdminDashboard() {
             </div>
           </div>
 
+          {/* Subscription Revenue Chart */}
           <div className="bg-surface-container-lowest p-8 rounded-xl custom-shadow">
-            <h3 className="text-lg font-bold text-on-surface mb-6">Revenue Breakdown</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="flex items-center gap-4 p-4 bg-surface-container-low rounded-xl">
-                <div className="w-12 h-12 rounded-xl bg-primary-container flex items-center justify-center">
-                  <span className="material-symbols-outlined text-primary">subscriptions</span>
-                </div>
-                <div>
-                  <p className="text-sm text-on-surface-variant">Subscription Revenue</p>
-                  <p className="text-xl font-bold text-on-surface">{formatCurrency(stats.total_subscription_revenue)}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-4 p-4 bg-surface-container-low rounded-xl">
-                <div className="w-12 h-12 rounded-xl bg-secondary-container flex items-center justify-center">
-                  <span className="material-symbols-outlined text-secondary">trending_up</span>
-                </div>
-                <div>
-                  <p className="text-sm text-on-surface-variant">Boost Revenue</p>
-                  <p className="text-xl font-bold text-on-surface">{formatCurrency(stats.total_boost_revenue)}</p>
-                </div>
-              </div>
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-bold text-on-surface">Subscription Revenue</h3>
+              <p className="text-sm font-semibold text-on-surface-variant">{formatCurrency(stats.total_subscription_revenue)} total</p>
             </div>
+            <ResponsiveContainer width="100%" height={280}>
+              <BarChart data={charts?.subscription_revenue || []}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-outline-variant, #e0e0e0)" />
+                <XAxis dataKey="month" tick={{ fontSize: 12 }} stroke="var(--color-outline, #a0a0a0)" />
+                <YAxis tick={{ fontSize: 12 }} stroke="var(--color-outline, #a0a0a0)" />
+                <Tooltip
+                  contentStyle={{ borderRadius: 12, border: "none", boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
+                  formatter={(val) => [formatCurrency(val), "Revenue"]}
+                />
+                <Bar dataKey="value" fill="var(--color-primary, #2563eb)" radius={[6, 6, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Boost Revenue Chart */}
+          <div className="bg-surface-container-lowest p-8 rounded-xl custom-shadow">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-bold text-on-surface">Boost Revenue</h3>
+              <p className="text-sm font-semibold text-on-surface-variant">{formatCurrency(stats.total_boost_revenue)} total</p>
+            </div>
+            <ResponsiveContainer width="100%" height={280}>
+              <BarChart data={charts?.boost_revenue || []}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-outline-variant, #e0e0e0)" />
+                <XAxis dataKey="month" tick={{ fontSize: 12 }} stroke="var(--color-outline, #a0a0a0)" />
+                <YAxis tick={{ fontSize: 12 }} stroke="var(--color-outline, #a0a0a0)" />
+                <Tooltip
+                  contentStyle={{ borderRadius: 12, border: "none", boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
+                  formatter={(val) => [formatCurrency(val), "Revenue"]}
+                />
+                <Bar dataKey="value" fill="var(--color-secondary, #7c3aed)" radius={[6, 6, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Reservations Chart */}
+          <div className="bg-surface-container-lowest p-8 rounded-xl custom-shadow">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-bold text-on-surface">Reservations</h3>
+              <p className="text-sm font-semibold text-on-surface-variant">{formatNumber(stats.total_reservations)} total</p>
+            </div>
+            <ResponsiveContainer width="100%" height={280}>
+              <LineChart data={charts?.reservations || []}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-outline-variant, #e0e0e0)" />
+                <XAxis dataKey="month" tick={{ fontSize: 12 }} stroke="var(--color-outline, #a0a0a0)" />
+                <YAxis tick={{ fontSize: 12 }} stroke="var(--color-outline, #a0a0a0)" />
+                <Tooltip
+                  contentStyle={{ borderRadius: 12, border: "none", boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
+                  formatter={(val) => [formatNumber(val), "Reservations"]}
+                />
+                <Line type="monotone" dataKey="value" stroke="var(--color-tertiary, #0891b2)" strokeWidth={3} dot={{ r: 5 }} />
+              </LineChart>
+            </ResponsiveContainer>
           </div>
         </main>
       </div>

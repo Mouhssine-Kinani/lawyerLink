@@ -139,7 +139,7 @@ export default function Navbar() {
                     >
                       AI Assistant
                     </NavLink>
-                  )}
+                  ) }
                 </>
               )}
             </div>
