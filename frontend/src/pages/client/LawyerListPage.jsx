@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "../../components/layout/Navbar";
 import Footer from "../../components/layout/Footer";
@@ -40,14 +40,35 @@ export default function LawyerListPage() {
   const [maxRate, setMaxRate] = useState("");
   const [minRating, setMinRating] = useState("");
   const [language, setLanguage] = useState("");
+  const [specialtyOptions, setSpecialtyOptions] = useState([]);
+  const [showSpecialtyDropdown, setShowSpecialtyDropdown] = useState(false);
+  const [specialtySearch, setSpecialtySearch] = useState("");
 
-  const specialtyOptions = ["Corporate Law", "Intellectual Property", "Family Law", "Criminal Defense"];
+  const specialtyRef = useRef(null);
+
+  useEffect(() => {
+    lawyerApi.getSpecialties().then(setSpecialtyOptions).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    function handleClick(e) {
+      if (specialtyRef.current && !specialtyRef.current.contains(e.target)) {
+        setShowSpecialtyDropdown(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  const filteredSpecialties = specialtyOptions.filter((s) =>
+    s.toLowerCase().includes(specialtySearch.toLowerCase())
+  );
 
   const cityOptions = [...new Set(lawyers.map((l) => l.city).filter(Boolean))].sort();
 
   const fetchLawyers = () => {
     setLoading(true);
-    const params = { sort_by: sortBy, limit: 50 };
+    const params = { sort_by: sortBy, limit: 20 };
 
     if (selectedSpecialties.length > 0) {
       params.specialty = selectedSpecialties.join(",");
@@ -82,6 +103,8 @@ export default function LawyerListPage() {
   };
 
   const handleApplyFilters = () => {
+    setShowSpecialtyDropdown(false);
+    setSpecialtySearch("");
     fetchLawyers();
   };
 
@@ -92,6 +115,8 @@ export default function LawyerListPage() {
     setMaxRate("");
     setMinRating("");
     setLanguage("");
+    setShowSpecialtyDropdown(false);
+    setSpecialtySearch("");
     setSortBy("rating");
   };
 
@@ -107,18 +132,57 @@ export default function LawyerListPage() {
           <div className="space-y-10">
             <div className="space-y-4">
               <label className="block text-xs font-label font-bold text-on-surface-variant tracking-widest uppercase">Legal Specialty</label>
-              <div className="space-y-2">
-                {specialtyOptions.map((spec) => (
-                  <label key={spec} className="flex items-center gap-3 cursor-pointer group">
-                    <input
-                      checked={selectedSpecialties.includes(spec)}
-                      onChange={() => handleSpecialtyChange(spec)}
-                      className="rounded-sm border-outline-variant text-primary focus:ring-primary w-4 h-4"
-                      type="checkbox"
-                    />
-                    <span className="text-sm text-on-surface-variant group-hover:text-primary">{spec}</span>
-                  </label>
-                ))}
+              <div className="relative" ref={specialtyRef}>
+                <div className="flex flex-wrap gap-1.5 mb-1.5">
+                  {selectedSpecialties.map((s) => (
+                    <span key={s} className="inline-flex items-center gap-1 px-2 py-0.5 bg-primary/10 text-primary text-xs font-semibold rounded-full">
+                      {s}
+                      <button
+                        type="button"
+                        onClick={() => handleSpecialtyChange(s)}
+                        className="w-3.5 h-3.5 flex items-center justify-center rounded-full hover:bg-primary/20 transition-colors"
+                      >
+                        <span className="material-symbols-outlined text-[10px]">close</span>
+                      </button>
+                    </span>
+                  ))}
+                </div>
+                <div className="relative">
+                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-lg">search</span>
+                  <input
+                    value={specialtySearch}
+                    onChange={(e) => {
+                      setSpecialtySearch(e.target.value);
+                      setShowSpecialtyDropdown(true);
+                    }}
+                    onFocus={() => setShowSpecialtyDropdown(true)}
+                    className="w-full bg-surface-container-high border-none rounded-lg py-2.5 pl-10 pr-3 text-sm focus:ring-1 focus:ring-primary/30 focus:bg-surface-container-lowest transition-all"
+                    placeholder={selectedSpecialties.length === 0 ? "Search specialties..." : "Type to filter..."}
+                    type="text"
+                  />
+                </div>
+                {showSpecialtyDropdown && (
+                  <div className="absolute z-20 mt-1 w-full bg-surface-container-lowest border border-outline-variant/20 rounded-lg shadow-xl max-h-60 overflow-y-auto">
+                    {filteredSpecialties.length > 0 ? (
+                      filteredSpecialties.map((spec) => (
+                        <label
+                          key={spec}
+                          className="flex items-center gap-3 px-3 py-2.5 cursor-pointer hover:bg-surface-container-low transition-colors"
+                        >
+                          <input
+                            checked={selectedSpecialties.includes(spec)}
+                            onChange={() => handleSpecialtyChange(spec)}
+                            className="rounded-sm border-outline-variant text-primary focus:ring-primary w-4 h-4"
+                            type="checkbox"
+                          />
+                          <span className="text-sm text-on-surface-variant">{spec}</span>
+                        </label>
+                      ))
+                    ) : (
+                      <p className="px-3 py-4 text-sm text-on-surface-variant/50 text-center">No specialties match</p>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
             <div className="space-y-4">

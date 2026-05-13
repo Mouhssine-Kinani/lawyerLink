@@ -14,18 +14,29 @@ function getUser() {
   const raw = localStorage.getItem(USER_KEY);
   if (!raw) return null;
   try {
-    return JSON.parse(raw);
+    const u = JSON.parse(raw);
+    if (u && !u.id) {
+      const token = localStorage.getItem(TOKEN_KEY);
+      if (token) {
+        const decoded = decodeJwt(token);
+        u.id = decoded.id;
+      }
+    }
+    return u;
   } catch {
     return null;
   }
 }
 
-function decodeJwtRole(token) {
+function decodeJwt(token) {
   try {
     const payload = JSON.parse(atob(token.split(".")[1]));
-    return payload.role || "client";
+    return {
+      id: payload.sub || payload.user_id || null,
+      role: payload.role || "client",
+    };
   } catch {
-    return "client";
+    return { id: null, role: "client" };
   }
 }
 
@@ -55,9 +66,11 @@ export function AuthProvider({ children }) {
       const data = await authApi.login({ email, password });
       localStorage.setItem(TOKEN_KEY, data.access_token);
 
+      const decoded = decodeJwt(data.access_token);
       const userObj = {
         email,
-        role: decodeJwtRole(data.access_token),
+        id: decoded.id,
+        role: decoded.role,
       };
       localStorage.setItem(USER_KEY, JSON.stringify(userObj));
 

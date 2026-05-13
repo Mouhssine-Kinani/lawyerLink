@@ -45,6 +45,10 @@ export const lawyerApi = {
     return apiRequest(`/reviews/lawyer/${lawyerId}?limit=${limit}`);
   },
 
+  getLawyerMonthAvailability(lawyerId, year, month) {
+    return apiRequest(`/lawyer/public/${lawyerId}/availability/month?year=${year}&month=${month}`);
+  },
+
   updateProfile(data, token) {
     return apiRequest("/lawyer/me", {
       method: "PATCH",
@@ -79,5 +83,13 @@ export const lawyerApi = {
     return apiRequest("/users/me", {
       headers: authHeader(token),
     });
+  },
+
+  getSpecialties() {
+    return apiRequest("/lawyer/specialties");
+  },
+
+  searchLawyers(q, limit = 10) {
+    return apiRequest(`/lawyer/search?q=${encodeURIComponent(q)}&limit=${limit}`);
   },
 };

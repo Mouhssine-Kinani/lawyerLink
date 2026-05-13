@@ -2,7 +2,9 @@ import { useParams, Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import Navbar from "../../components/layout/Navbar";
 import Footer from "../../components/layout/Footer";
+import { useAuth } from "../../hooks/useAuth";
 import { lawyerApi } from "../../api/lawyer.api";
+import { reviewApi } from "../../api/review.api";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
@@ -43,10 +45,13 @@ const PLACEHOLDER_AVATAR = "data:image/svg+xml," + encodeURIComponent(
 
 export default function LawyerProfilePage() {
   const { id } = useParams();
+  const { token, user } = useAuth();
   const [lawyer, setLawyer] = useState(null);
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [reviewStatus, setReviewStatus] = useState(null);
+  const [showAllReviews, setShowAllReviews] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -55,10 +60,14 @@ export default function LawyerProfilePage() {
     Promise.all([
       lawyerApi.getLawyerById(id),
       lawyerApi.getLawyerReviews(id),
+      user?.role === "client" && token
+        ? reviewApi.canReviewLawyer(id, token).catch(() => null)
+        : Promise.resolve(null),
     ])
-      .then(([lawyerData, reviewsData]) => {
+      .then(([lawyerData, reviewsData, canData]) => {
         setLawyer(lawyerData);
         setReviews(reviewsData || []);
+        setReviewStatus(canData);
       })
       .catch((err) => {
         setError(err.message);
@@ -66,7 +75,9 @@ export default function LawyerProfilePage() {
       .finally(() => {
         setLoading(false);
       });
-  }, [id]);
+  }, [id, token, user]);
+
+  const displayedReviews = showAllReviews ? reviews : reviews.slice(0, 3);
 
   if (loading) {
     return (
@@ -159,24 +170,61 @@ export default function LawyerProfilePage() {
               </section>
             )}
 
-            <div className="bg-primary text-on-primary p-8 rounded-xl shadow-2xl shadow-primary/30 space-y-6">
-              <h3 className="text-lg font-bold">Schedule Consultation</h3>
-              <div className="space-y-4">
-                <div className="flex items-center gap-4">
-                  <span className="material-symbols-outlined text-on-primary-container">mail</span>
-                  <span className="text-sm">{email}</span>
+            <div className="bg-gradient-to-br from-primary to-primary-container/90 text-on-primary p-8 rounded-xl shadow-2xl shadow-primary/30 space-y-6">
+              <h3 className="text-lg font-bold tracking-tight">Get in Touch</h3>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center">
+                    <span className="material-symbols-outlined text-sm">mail</span>
+                  </div>
+                  <span className="text-sm text-on-primary/90">{email}</span>
                 </div>
-                <div className="flex items-center gap-4">
-                  <span className="material-symbols-outlined text-on-primary-container">call</span>
-                  <span className="text-sm">{lawyer.phone || "+1 (555) 000-0000"}</span>
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center">
+                    <span className="material-symbols-outlined text-sm">call</span>
+                  </div>
+                  <span className="text-sm text-on-primary/90">{lawyer.phone || "+1 (555) 000-0000"}</span>
                 </div>
               </div>
-              <Link
-                to="/client/reservations/new"
-                className="w-full block text-center py-4 bg-surface-container-lowest text-primary font-bold rounded-lg hover:bg-surface-container-low transition-colors"
-              >
-                Book Discovery Call
-              </Link>
+              {user?.role === "client" ? (
+                <div className="space-y-3 pt-2">
+                  <Link
+                    to={`/client/reservations/new?lawyerId=${id}`}
+                    className="w-full flex items-center justify-center gap-2 py-3.5 bg-white text-primary font-bold rounded-xl hover:bg-white/90 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-black/10"
+                  >
+                    <span className="material-symbols-outlined text-lg">calendar_month</span>
+                    Book Reservation
+                  </Link>
+                  <Link
+                    to={`/client/reviews?lawyerId=${id}`}
+                    className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold transition-all ${
+                      reviewStatus?.can_review || reviewStatus?.has_review
+                        ? "bg-white/10 text-white hover:bg-white/20 hover:scale-[1.02] active:scale-[0.98] border border-white/20"
+                        : "bg-white/5 text-white/35 border border-white/10 cursor-not-allowed"
+                    }`}
+                    onClick={(e) => {
+                      if (!reviewStatus?.can_review && !reviewStatus?.has_review) e.preventDefault();
+                    }}
+                  >
+                    <span className="material-symbols-outlined text-lg">
+                      {reviewStatus?.has_review ? "edit_square" : reviewStatus?.can_review ? "star_rate" : "lock"}
+                    </span>
+                    {reviewStatus?.has_review
+                      ? "Edit Your Review"
+                      : reviewStatus?.can_review
+                      ? "Write a Review"
+                      : "Write a Review"}
+                  </Link>
+                </div>
+              ) : user?.role === "lawyer" ? null : (
+                <Link
+                  to={`/client/reviews?lawyerId=${id}`}
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-white/10 text-white font-semibold hover:bg-white/20 hover:scale-[1.02] active:scale-[0.98] transition-all text-sm border border-white/20"
+                >
+                  <span className="material-symbols-outlined text-lg">star_rate</span>
+                  Write a Review
+                </Link>
+              )}
             </div>
           </div>
 
@@ -276,7 +324,7 @@ export default function LawyerProfilePage() {
           {/* Reviews Grid */}
           {reviews.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {reviews.map((review) => (
+              {displayedReviews.map((review) => (
                 <div
                   key={review.id}
                   className="bg-surface-container-lowest p-8 rounded-xl shadow-sm border border-outline-variant/10 flex flex-col justify-between"
@@ -312,11 +360,16 @@ export default function LawyerProfilePage() {
             </div>
           )}
 
-          <div className="flex justify-center">
-            <button className="px-12 py-4 border border-outline text-sm font-bold uppercase tracking-widest text-on-surface hover:bg-surface-container-low transition-colors rounded-lg">
-              View All Reviews
-            </button>
-          </div>
+          {reviews.length > 3 && (
+            <div className="flex justify-center">
+              <button
+                onClick={() => setShowAllReviews(!showAllReviews)}
+                className="px-12 py-4 border border-outline text-sm font-bold uppercase tracking-widest text-on-surface hover:bg-surface-container-low transition-colors rounded-lg"
+              >
+                {showAllReviews ? "Show Less" : `View All Reviews (${reviews.length})`}
+              </button>
+            </div>
+          )}
         </section>
       </main>
 

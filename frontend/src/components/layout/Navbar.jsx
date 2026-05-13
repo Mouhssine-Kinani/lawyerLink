@@ -1,5 +1,5 @@
-import { Link, NavLink } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { Link, NavLink, useNavigate } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { lawyerApi } from "../../api/lawyer.api";
 
@@ -22,7 +22,14 @@ const PLACEHOLDER_AVATAR =
 
 export default function Navbar() {
   const { user, token, isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
   const [lawyerImage, setLawyerImage] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [showSearchResults, setShowSearchResults] = useState(false);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const searchRef = useRef(null);
+  const debounceRef = useRef(null);
 
   useEffect(() => {
     if (isAuthenticated && user?.role === "lawyer" && token) {
@@ -33,9 +40,49 @@ export default function Navbar() {
     }
   }, [isAuthenticated, user?.role, token]);
 
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (!searchQuery.trim()) {
+      setSearchResults([]);
+      setShowSearchResults(false);
+      return;
+    }
+    setSearchLoading(true);
+    debounceRef.current = setTimeout(() => {
+      lawyerApi
+        .searchLawyers(searchQuery.trim(), 8)
+        .then((data) => {
+          setSearchResults(data || []);
+          setShowSearchResults(data?.length > 0);
+        })
+        .catch(() => {})
+        .finally(() => setSearchLoading(false));
+    }, 300);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    function handleClick(e) {
+      if (searchRef.current && !searchRef.current.contains(e.target)) {
+        setShowSearchResults(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
   const handleLogout = () => {
     logout();
   };
+
+  function handleSelectLawyer(lawyerId) {
+    setShowSearchResults(false);
+    setSearchQuery("");
+    if (user?.role === "lawyer" && user?.id == lawyerId) {
+      navigate("/lawyer/profile");
+    } else {
+      navigate(`/client/lawyers/${lawyerId}`);
+    }
+  }
 
   return (
     <nav className="sticky top-0 z-50 glass-effect border-b border-outline-variant/20 px-6 py-4">
@@ -92,27 +139,97 @@ export default function Navbar() {
           ) : (
             <>
               {user?.role === "lawyer" && (
-                <div className="relative group">
-                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant group-focus-within:text-primary transition-colors">
-                    search
-                  </span>
-                  <input
-                    className="pl-11 pr-4 py-2.5 bg-surface-container-low border-none rounded-full w-80 text-sm focus:ring-2 focus:ring-primary/20 transition-all"
-                    placeholder="Search cases, clients..."
-                    type="text"
-                  />
-                </div>
-              )}
-              {user?.role === "client" && (
-                <div className="relative w-full max-w-xl">
+                <div className="relative w-full max-w-xl" ref={searchRef}>
                   <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">
                     search
                   </span>
                   <input
-                    className="w-full bg-surface-container-high border-none rounded-xl pl-12 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 transition-all"
-                    placeholder="Search for cases, documents, or counsel..."
+                    className="w-full bg-surface-container-high border-none rounded-xl pl-12 pr-10 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 transition-all"
+                    placeholder="Search lawyers by name, firm, or specialty..."
                     type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onFocus={() => {
+                      if (searchResults.length > 0) setShowSearchResults(true);
+                    }}
                   />
+                  {searchLoading && (
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                  )}
+                  {showSearchResults && searchResults.length > 0 && (
+                    <div className="absolute top-full mt-2 left-0 right-0 bg-surface-container-lowest border border-outline-variant/20 rounded-xl shadow-2xl overflow-hidden z-50">
+                      {searchResults.map((lawyer) => (
+                        <button
+                          key={lawyer.user_id}
+                          onClick={() => handleSelectLawyer(lawyer.user_id)}
+                          className="w-full flex items-center gap-3 px-4 py-3 hover:bg-surface-container-low transition-colors text-left"
+                        >
+                          <div className="w-8 h-8 rounded-full bg-surface-container-high overflow-hidden flex-shrink-0">
+                            {lawyer.image_url ? (
+                              <img className="w-full h-full object-cover" alt="" src={imageUrl(lawyer.image_url)} />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center bg-primary-container text-on-primary-container font-bold text-xs">
+                                {(lawyer.first_name?.[0] || "") + (lawyer.last_name?.[0] || "")}
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-on-surface truncate">
+                              {lawyer.first_name} {lawyer.last_name}
+                            </p>
+                            <p className="text-xs text-on-surface-variant truncate">{lawyer.firm || "Legal Professional"}</p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+              {user?.role === "client" && (
+                <div className="relative w-full max-w-xl" ref={searchRef}>
+                  <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">
+                    search
+                  </span>
+                  <input
+                    className="w-full bg-surface-container-high border-none rounded-xl pl-12 pr-10 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 transition-all"
+                    placeholder="Search lawyers by name, firm, or specialty..."
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onFocus={() => {
+                      if (searchResults.length > 0) setShowSearchResults(true);
+                    }}
+                  />
+                  {searchLoading && (
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                  )}
+                  {showSearchResults && searchResults.length > 0 && (
+                    <div className="absolute top-full mt-2 left-0 right-0 bg-surface-container-lowest border border-outline-variant/20 rounded-xl shadow-2xl overflow-hidden z-50">
+                      {searchResults.map((lawyer) => (
+                        <button
+                          key={lawyer.user_id}
+                          onClick={() => handleSelectLawyer(lawyer.user_id)}
+                          className="w-full flex items-center gap-3 px-4 py-3 hover:bg-surface-container-low transition-colors text-left"
+                        >
+                          <div className="w-8 h-8 rounded-full bg-surface-container-high overflow-hidden flex-shrink-0">
+                            {lawyer.image_url ? (
+                              <img className="w-full h-full object-cover" alt="" src={imageUrl(lawyer.image_url)} />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center bg-primary-container text-on-primary-container font-bold text-xs">
+                                {(lawyer.first_name?.[0] || "") + (lawyer.last_name?.[0] || "")}
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-on-surface truncate">
+                              {lawyer.first_name} {lawyer.last_name}
+                            </p>
+                            <p className="text-xs text-on-surface-variant truncate">{lawyer.firm || "Legal Professional"}</p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
               {user?.role === "lawyer" && (
