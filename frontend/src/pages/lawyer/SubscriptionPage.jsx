@@ -157,7 +157,7 @@ export default function SubscriptionPage() {
             <div className="max-w-6xl mx-auto mb-8 p-4 bg-error-container text-on-error-container rounded-xl flex items-center gap-3">
               <span className="material-symbols-outlined">error</span>
               <span className="text-sm font-medium">{error}</span>
-              <button onClick={() => setError(null)} className="ml-auto material-symbols-outlined hover:opacity-70">
+              <button onClick={() => setError(null)} className="ml-auto material-symbols-outlined hover:opacity-70 cursor-pointer">
                 close
               </button>
             </div>
@@ -228,7 +228,7 @@ export default function SubscriptionPage() {
                     <button
                       onClick={() => handlePurchase("subscription", plan.id)}
                       disabled={processing === `subscription_${plan.id}`}
-                      className="w-full py-3 primary-gradient text-white font-bold rounded-md shadow-lg shadow-primary/30 hover:opacity-90 transition-opacity disabled:opacity-50"
+                      className="w-full py-3 primary-gradient text-white font-bold rounded-md shadow-lg shadow-primary/30 hover:opacity-90 transition-opacity disabled:opacity-50 cursor-pointer"
                     >
                       {processing === `subscription_${plan.id}` ? "Processing..." : "Upgrade Now"}
                     </button>
@@ -261,7 +261,7 @@ export default function SubscriptionPage() {
                   <button
                     onClick={handleCancel}
                     disabled={processing === "cancel"}
-                    className="text-error text-sm font-bold hover:underline disabled:opacity-50"
+                    className="text-error text-sm font-bold hover:underline disabled:opacity-50 cursor-pointer"
                   >
                     {processing === "cancel" ? "Cancelling..." : "Cancel Subscription"}
                   </button>
@@ -331,7 +331,7 @@ export default function SubscriptionPage() {
                     <button
                       onClick={() => handlePurchase("boost", boost.level)}
                       disabled={processing === `boost_${boost.level}` || !subscription}
-                      className={`w-full py-3 rounded-lg font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+                      className={`w-full py-3 rounded-lg font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer ${
                         showRecommended
                           ? "primary-gradient text-on-primary shadow-lg shadow-primary/20 hover:scale-[1.02]"
                           : "border border-outline-variant text-primary hover:bg-primary hover:text-on-primary"
@@ -452,7 +452,7 @@ export default function SubscriptionPage() {
                     <p className="text-xs text-outline">Expires 05/25</p>
                   </div>
                 </div>
-                <button className="material-symbols-outlined text-outline hover:text-error text-[20px] transition-colors">delete</button>
+                <button className="material-symbols-outlined text-outline hover:text-error text-[20px] transition-colors cursor-pointer">delete</button>
               </div>
               <div className="p-6 bg-surface-container-lowest rounded-xl border-2 border-dashed border-outline-variant/10 flex items-center justify-center gap-2 text-outline hover:border-secondary hover:text-secondary transition-all cursor-pointer">
                 <span className="material-symbols-outlined text-[20px]">add</span>

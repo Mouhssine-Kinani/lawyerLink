@@ -54,6 +54,7 @@ export default function Navbar() {
     if (!searchQuery.trim()) {
       setSearchResults([]);
       setShowSearchResults(false);
+      setSearchLoading(false);
       return;
     }
     setSearchLoading(true);
@@ -118,6 +119,18 @@ export default function Navbar() {
                 </NavLink>
               ) : (
                 <>
+                  {user?.role === "lawyer" && (
+                    <NavLink
+                      to="/lawyer/dashboard"
+                      className={({ isActive }) =>
+                        `hover:text-secondary transition-colors ${
+                          isActive ? "text-secondary" : "text-on-surface"
+                        }`
+                      }
+                    >
+                      Dashboard
+                    </NavLink>
+                  )}
                   <NavLink
                     to="/client/lawyers"
                     className={({ isActive }) =>
@@ -289,7 +302,7 @@ export default function Navbar() {
               </span>
               <button
                 onClick={handleLogout}
-                className="px-5 py-2 rounded-xl text-sm font-semibold text-white primary-gradient shadow-lg shadow-primary/20"
+                className="px-5 py-2 rounded-xl text-sm font-semibold text-white primary-gradient shadow-lg shadow-primary/20 cursor-pointer"
               >
                 Logout
               </button>

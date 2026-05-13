@@ -5,15 +5,15 @@ const navConfig = {
   admin: [
     { path: "/admin/dashboard", icon: "dashboard", label: "Dashboard" },
     { path: "/admin/users", icon: "person", label: "Users" },
-    { path: "/admin/lawyers/approval", icon: "gavel", label: "Lawyer Approval" },
-    { path: "/admin/reservations", icon: "event_available", label: "Reservations" },
+    // { path: "/admin/lawyers/approval", icon: "gavel", label: "Lawyer Approval" },
+    // { path: "/admin/reservations", icon: "event_available", label: "Reservations" },
   ],
   lawyer: [
     { path: "/lawyer/dashboard", icon: "dashboard", label: "Dashboard" },
     { path: "/lawyer/reservations", icon: "event_available", label: "Reservations" },
     { path: "/lawyer/profile", icon: "person", label: "Profile" },
     { path: "/lawyer/subscription", icon: "payments", label: "Subscription" },
-    { path: "/lawyer/boost", icon: "trending_up", label: "Boost" },
+    // { path: "/lawyer/boost", icon: "trending_up", label: "Boost" },
   ],
   client: [
     { path: "/client/lawyers", icon: "gavel", label: "Find Lawyers" },

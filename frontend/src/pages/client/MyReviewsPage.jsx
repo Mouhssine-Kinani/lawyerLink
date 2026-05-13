@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import Swal from "sweetalert2";
 import Sidebar from "../../components/layout/Sidebar";
 import Navbar from "../../components/layout/Navbar";
 import { useAuth } from "../../hooks/useAuth";
@@ -76,7 +77,26 @@ export default function MyReviewsPage() {
   }, [token]);
 
   async function handleDelete(reviewId) {
-    if (!window.confirm("Delete this review?")) return;
+    const result = await Swal.fire({
+      title: "Delete Review?",
+      text: "This action cannot be undone. Are you sure you want to delete this review?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#b42318",
+      cancelButtonColor: "#64748b",
+      confirmButtonText: "Yes, delete it",
+      cancelButtonText: "Cancel",
+      background: "#fafcff",
+      backdrop: "rgba(0,0,0,0.4)",
+      customClass: {
+        title: "text-on-surface text-lg font-bold",
+        htmlContainer: "text-on-surface-variant text-sm",
+        confirmButton: "px-6 py-2.5 rounded-lg text-sm font-bold shadow-lg",
+        cancelButton: "px-6 py-2.5 rounded-lg text-sm font-bold",
+        popup: "rounded-2xl ambient-shadow",
+      },
+    });
+    if (!result.isConfirmed) return;
     setDeleting(reviewId);
     try {
       await reviewApi.deleteReview(reviewId, token);
@@ -182,7 +202,7 @@ export default function MyReviewsPage() {
                           <button
                             onClick={() => handleDelete(review.id)}
                             disabled={deleting === review.id}
-                            className="flex items-center gap-1.5 hover:text-error font-bold uppercase tracking-widest disabled:opacity-50"
+                            className="flex items-center gap-1.5 hover:text-error font-bold uppercase tracking-widest disabled:opacity-50 cursor-pointer"
                           >
                             <span className="material-symbols-outlined text-lg">delete</span>
                             {deleting === review.id ? "..." : "Delete"}

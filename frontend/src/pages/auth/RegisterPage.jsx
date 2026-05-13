@@ -105,14 +105,14 @@ export default function RegisterPage() {
               <button
                 type="button"
                 onClick={() => setForm((prev) => ({ ...prev, role: "client" }))}
-                className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold transition-all ${form.role === "client" ? "bg-white text-primary shadow-sm" : "text-on-surface-variant hover:text-on-surface"}`}
+                className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold transition-all cursor-pointer ${form.role === "client" ? "bg-white text-primary shadow-sm" : "text-on-surface-variant hover:text-on-surface"}`}
               >
                 Client
               </button>
               <button
                 type="button"
                 onClick={() => setForm((prev) => ({ ...prev, role: "lawyer" }))}
-                className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold transition-all ${form.role === "lawyer" ? "bg-white text-primary shadow-sm" : "text-on-surface-variant hover:text-on-surface"}`}
+                className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold transition-all cursor-pointer ${form.role === "lawyer" ? "bg-white text-primary shadow-sm" : "text-on-surface-variant hover:text-on-surface"}`}
               >
                 Lawyer
               </button>
@@ -217,7 +217,7 @@ export default function RegisterPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-4 bg-gradient-to-br from-primary to-primary-container text-white font-bold rounded-xl shadow-lg shadow-primary/20 hover:shadow-xl hover:translate-y-[-1px] active:translate-y-[1px] transition-all mt-4 disabled:opacity-60 disabled:cursor-not-allowed"
+                className="w-full py-4 bg-gradient-to-br from-primary to-primary-container text-white font-bold rounded-xl shadow-lg shadow-primary/20 hover:shadow-xl hover:translate-y-[-1px] active:translate-y-[1px] transition-all mt-4 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
               >
                 {loading ? (
                   <span className="inline-block w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>

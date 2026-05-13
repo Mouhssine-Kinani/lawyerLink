@@ -57,6 +57,7 @@ def create_review(
         lawyer_id=data.lawyer_id,
         rating=data.rating,
         comment=data.comment,
+        is_anonymous=data.is_anonymous,
     )
     db.add(review)
     db.flush()
@@ -89,6 +90,7 @@ def get_lawyer_reviews(
     for review in reviews:
         client = db.query(Client).filter(Client.user_id == review.client_id).first()
         client_user = db.query(User).filter(User.id == review.client_id).first() if client else None
+        is_anon = review.is_anonymous
         result.append(
             ReviewWithClientResponse(
                 id=review.id,
@@ -96,11 +98,12 @@ def get_lawyer_reviews(
                 lawyer_id=review.lawyer_id,
                 rating=review.rating,
                 comment=review.comment,
+                is_anonymous=is_anon,
                 created_at=review.created_at,
                 updated_at=review.updated_at,
-                client_first_name=client.first_name if client else None,
-                client_last_name=client.last_name if client else None,
-                client_image_url=client_user.image_url if client_user else None,
+                client_first_name=None if is_anon else (client.first_name if client else None),
+                client_last_name=None if is_anon else (client.last_name if client else None),
+                client_image_url=None if is_anon else (client_user.image_url if client_user else None),
             )
         )
     return result
@@ -208,6 +211,9 @@ def update_review(
         changed = True
     if update.rating is not None:
         review.rating = update.rating
+        changed = True
+    if update.is_anonymous is not None:
+        review.is_anonymous = update.is_anonymous
         changed = True
     if not changed:
         raise HTTPException(400, "No fields to update")

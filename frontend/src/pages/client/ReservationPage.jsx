@@ -385,11 +385,11 @@ export default function ReservationPage() {
                   <p className="text-sm text-on-surface-variant">Available dates for {MONTHS[calMonth]} {calYear}</p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button onClick={prevMonth} className="p-2 hover:bg-surface-container-low rounded-lg transition-colors">
+                  <button onClick={prevMonth} className="p-2 hover:bg-surface-container-low rounded-lg transition-colors cursor-pointer">
                     <span className="material-symbols-outlined">chevron_left</span>
                   </button>
                   <span className="text-sm font-bold w-32 text-center">{MONTHS[calMonth]} {calYear}</span>
-                  <button onClick={nextMonth} className="p-2 hover:bg-surface-container-low rounded-lg transition-colors">
+                  <button onClick={nextMonth} className="p-2 hover:bg-surface-container-low rounded-lg transition-colors cursor-pointer">
                     <span className="material-symbols-outlined">chevron_right</span>
                   </button>
                 </div>
@@ -559,7 +559,7 @@ export default function ReservationPage() {
               <button
                 onClick={handleSubmit}
                 disabled={!selectedDate || !selectedSlot || submitting || !!existingReservation}
-                className={`px-12 py-4 text-lg font-bold text-white rounded-xl shadow-xl transition-all ${
+                className={`px-12 py-4 text-lg font-bold text-white rounded-xl shadow-xl transition-all cursor-pointer ${
                   !selectedDate || !selectedSlot || submitting || !!existingReservation
                     ? "bg-outline/50 cursor-not-allowed"
                     : "bg-gradient-to-br from-primary to-primary-container shadow-primary/20 hover:scale-[1.02]"
