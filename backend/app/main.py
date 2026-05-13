@@ -30,6 +30,18 @@ import app.payment.model
 # Base.metadata.drop_all(bind=engine)
 Base.metadata.create_all(bind=engine)
 
+# Migration: add missing columns that won't be auto-added by create_all on existing tables
+from sqlalchemy import inspect, text as sql_text
+try:
+    inspector = inspect(engine)
+    sub_cols = [c["name"] for c in inspector.get_columns("subscriptions")]
+    if "plan_type" not in sub_cols:
+        with engine.connect() as conn:
+            conn.execute(sql_text("ALTER TABLE subscriptions ADD COLUMN plan_type VARCHAR(20) DEFAULT 'pro' NOT NULL"))
+            conn.commit()
+except Exception:
+    pass  # migration is best-effort
+
 app = FastAPI(
     title="LawyerLink API",
     description="Legal consultation platform with AI assistance",

@@ -2,7 +2,9 @@ import { useParams, Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import Navbar from "../../components/layout/Navbar";
 import Footer from "../../components/layout/Footer";
+import { useAuth } from "../../hooks/useAuth";
 import { lawyerApi } from "../../api/lawyer.api";
+import { reviewApi } from "../../api/review.api";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
@@ -34,21 +36,22 @@ function renderStars(rating) {
   return stars;
 }
 
-const PLACEHOLDER_IMAGES = [
-  "https://lh3.googleusercontent.com/aida-public/AB6AXuCRCKxGzp6_RP2TueZfgTzC250PEJid_LvtCfiwDTdVUM27Qqu6fboagZtErjdkJMVR9DEu93pX9K8tkoTZj5yaEuiDrZqgpoUXsNr2iDTXuujVfkDXDAlEsV4VQySBHwmkqtbIAWicgch0ZY7-8AqmccIRHveoNzEoum82VsdmbTpdk9tmg3WOkFNwoPtnMAr9jJsx0vO4_uAb2ZBCJ5hhtM7Zlz6O7g7TDjEMzueNPkKC4TINRo6WCMxqM_SR96AUAwgjGgc3e6Ou",
-  "https://lh3.googleusercontent.com/aida-public/AB6AXuCYuUYsNycerWuKUp4MmLw_hVvhB4JEiDRUyTZIPkzqSC38InmblOtZMxS_z9fbu97lj668_Suaiv3a_lMhbPDKofWwOEE5i3H27nsgaJEQFgKYebN7kpcoMa7Ctq9Gf1iKa8dC9dToNUud-FbV0u3_DQoFMcY06I1r9dibSytUM_Va72vS8MJgh8zua1BoIg96bmhR8XZN7jWMcst5j3pRFp6_xsGUbDjYedCl-58qK_cHb_hBpspantd01l_2fOQHrP5pXONlv-v8",
-  "https://lh3.googleusercontent.com/aida-public/AB6AXuDiDOOSRikWKLdQPzFC9BLwFCIXIUlsAa0QPKjCY4ZN11X9Q9dH7ksVQImn6VVQ3l4TU6RityjlsQXzlAaZPHDhLy7PoLGSL134WXktHPrUMX3WQhDaadHVVoG_CKyh2P_g-0KxEBB7ya5MUjbrnDzbmktmS5WrFXlfmvE22z-BG5y34nYYoOpOTk84qOp5f7ePDbUu8vq95wZ1FJy7UqAR2PwpaJrQmiKdUNmygGs6l9nXVKLInmYhNuZwRXBkHuz102ksoXs8260T",
-  "https://lh3.googleusercontent.com/aida-public/AB6AXuAR7gw7yoy1-I2YknYUXT8aH0N7csQmjXnorwzmoseMmeVGH4l6HY-YoG4A5cbDNPyp_j0pyzOGzbzpMzhZXDak9gS6t5Zt_jSyoyZLFl8REHqzDBUvYcrnYJki5ci7fvNKR9nW0Cs0jAiBBd2jYdKyuc9jnJHESgntKFrsJcLERdg4vhzawzEqDG5a5Y8FF76ZRiDIQxWArL_-mtyu01iyt2hAn_4zIjMN1Pe8jonzDQh1si4jbiovXi6OjVTgf67A_JBp_5bOmn8M",
-  "https://lh3.googleusercontent.com/aida-public/AB6AXuB7iZsu-Dt4z9_6SarD5qEC4JjcOGtx_9AmIqxJxvwC_WzBAnh-siSkYYvLAh7zZHULxmoKQhfe9_e0PtRCKyaMTVcKpsBmQlbHL3YEyeqzKtkp9ybZl0wx6FROC1PJwMaYB5mJulRzWUHKDT_QBWuoxquZHbjcFRMftQRX78KIIVebUN-e6LLAfePrNLe9JCAO9FMPNBpL_wBtbhqYleLEBS4QKqfgaJfPs_ickAe0WOm985LGloo1mejO9ZnlHwux8-n4OcwQMjBb",
-  "https://lh3.googleusercontent.com/aida-public/AB6AXuBQpk2HMbVWTApacNHxTFpFRhTNeSLHPsFKl-qxrp4Pxxtk5PhB8BFLAVbGpt2nTqxlgKEaZ2-fSaiEVYfxKHUa4aTS7GMqFCTO0gQvWH71-7FuKel3C5_5eYTLDF-LU-MQzxtPd0GkTTGblrLvbGuub1OFn5QU3xQTuR4KUh9IxccNyYfjKKAM_0Lp9gODZm4Q2zrTlWrRKmt6OvXp4A3Hc3HlMmDjGpsak-ugKfG9F-rFGFUWCtf9F8PahKJ-rvxIIleCKzqXKALc",
-];
+const PLACEHOLDER_AVATAR = "data:image/svg+xml," + encodeURIComponent(
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 112 112">
+    <rect width="112" height="112" fill="#e0e0e0"/>
+    <path fill="#bdbdbd" d="M56 56c12.4 0 22.5-10.1 22.5-22.5S68.4 11 56 11 33.5 21.1 33.5 33.5 43.6 56 56 56zm0 11.2C40.3 67.2 11 76.5 11 95v6h90v-6c0-18.5-29.3-27.8-45-27.8z"/>
+  </svg>`
+);
 
 export default function LawyerProfilePage() {
   const { id } = useParams();
+  const { token, user } = useAuth();
   const [lawyer, setLawyer] = useState(null);
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [reviewStatus, setReviewStatus] = useState(null);
+  const [showAllReviews, setShowAllReviews] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -57,10 +60,14 @@ export default function LawyerProfilePage() {
     Promise.all([
       lawyerApi.getLawyerById(id),
       lawyerApi.getLawyerReviews(id),
+      user?.role === "client" && token
+        ? reviewApi.canReviewLawyer(id, token).catch(() => null)
+        : Promise.resolve(null),
     ])
-      .then(([lawyerData, reviewsData]) => {
+      .then(([lawyerData, reviewsData, canData]) => {
         setLawyer(lawyerData);
         setReviews(reviewsData || []);
+        setReviewStatus(canData);
       })
       .catch((err) => {
         setError(err.message);
@@ -68,7 +75,9 @@ export default function LawyerProfilePage() {
       .finally(() => {
         setLoading(false);
       });
-  }, [id]);
+  }, [id, token, user]);
+
+  const displayedReviews = showAllReviews ? reviews : reviews.slice(0, 3);
 
   if (loading) {
     return (
@@ -104,7 +113,7 @@ export default function LawyerProfilePage() {
   const specialties = parseSpecialties(lawyer.specialties);
   const ratingPercent = lawyer.rating_avg ? Math.round(lawyer.rating_avg * 20) : null;
   const fullName = [lawyer.first_name, lawyer.last_name].filter(Boolean).join(" ") || "Legal Professional";
-  const profileImg = imageUrl(lawyer.image_url) || PLACEHOLDER_IMAGES[(lawyer.user_id || 0) % PLACEHOLDER_IMAGES.length];
+  const profileImg = imageUrl(lawyer.image_url) || PLACEHOLDER_AVATAR;
   const email = lawyer.email || "N/A";
   const totalRating = lawyer.rating_avg || 0;
   const reviewCount = lawyer.rating_count || reviews.length || 0;
@@ -161,24 +170,61 @@ export default function LawyerProfilePage() {
               </section>
             )}
 
-            <div className="bg-primary text-on-primary p-8 rounded-xl shadow-2xl shadow-primary/30 space-y-6">
-              <h3 className="text-lg font-bold">Schedule Consultation</h3>
-              <div className="space-y-4">
-                <div className="flex items-center gap-4">
-                  <span className="material-symbols-outlined text-on-primary-container">mail</span>
-                  <span className="text-sm">{email}</span>
+            <div className="bg-gradient-to-br from-primary to-primary-container/90 text-on-primary p-8 rounded-xl shadow-2xl shadow-primary/30 space-y-6">
+              <h3 className="text-lg font-bold tracking-tight">Get in Touch</h3>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center">
+                    <span className="material-symbols-outlined text-sm">mail</span>
+                  </div>
+                  <span className="text-sm text-on-primary/90">{email}</span>
                 </div>
-                <div className="flex items-center gap-4">
-                  <span className="material-symbols-outlined text-on-primary-container">call</span>
-                  <span className="text-sm">{lawyer.phone || "+1 (555) 000-0000"}</span>
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center">
+                    <span className="material-symbols-outlined text-sm">call</span>
+                  </div>
+                  <span className="text-sm text-on-primary/90">{lawyer.phone || "+1 (555) 000-0000"}</span>
                 </div>
               </div>
-              <Link
-                to="/client/reservations/new"
-                className="w-full block text-center py-4 bg-surface-container-lowest text-primary font-bold rounded-lg hover:bg-surface-container-low transition-colors"
-              >
-                Book Discovery Call
-              </Link>
+              {user?.role === "client" ? (
+                <div className="space-y-3 pt-2">
+                  <Link
+                    to={`/client/reservations/new?lawyerId=${id}`}
+                    className="w-full flex items-center justify-center gap-2 py-3.5 bg-white text-primary font-bold rounded-xl hover:bg-white/90 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-black/10"
+                  >
+                    <span className="material-symbols-outlined text-lg">calendar_month</span>
+                    Book Reservation
+                  </Link>
+                  <Link
+                    to={`/client/reviews?lawyerId=${id}`}
+                    className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold transition-all ${
+                      reviewStatus?.can_review || reviewStatus?.has_review
+                        ? "bg-white/10 text-white hover:bg-white/20 hover:scale-[1.02] active:scale-[0.98] border border-white/20"
+                        : "bg-white/5 text-white/35 border border-white/10 cursor-not-allowed"
+                    }`}
+                    onClick={(e) => {
+                      if (!reviewStatus?.can_review && !reviewStatus?.has_review) e.preventDefault();
+                    }}
+                  >
+                    <span className="material-symbols-outlined text-lg">
+                      {reviewStatus?.has_review ? "edit_square" : reviewStatus?.can_review ? "star_rate" : "lock"}
+                    </span>
+                    {reviewStatus?.has_review
+                      ? "Edit Your Review"
+                      : reviewStatus?.can_review
+                      ? "Write a Review"
+                      : "Write a Review"}
+                  </Link>
+                </div>
+              ) : user?.role === "lawyer" ? null : (
+                <Link
+                  to={`/client/reviews?lawyerId=${id}`}
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-white/10 text-white font-semibold hover:bg-white/20 hover:scale-[1.02] active:scale-[0.98] transition-all text-sm border border-white/20"
+                >
+                  <span className="material-symbols-outlined text-lg">star_rate</span>
+                  Write a Review
+                </Link>
+              )}
             </div>
           </div>
 
@@ -278,7 +324,7 @@ export default function LawyerProfilePage() {
           {/* Reviews Grid */}
           {reviews.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {reviews.map((review) => (
+              {displayedReviews.map((review) => (
                 <div
                   key={review.id}
                   className="bg-surface-container-lowest p-8 rounded-xl shadow-sm border border-outline-variant/10 flex flex-col justify-between"
@@ -314,11 +360,16 @@ export default function LawyerProfilePage() {
             </div>
           )}
 
-          <div className="flex justify-center">
-            <button className="px-12 py-4 border border-outline text-sm font-bold uppercase tracking-widest text-on-surface hover:bg-surface-container-low transition-colors rounded-lg">
-              View All Reviews
-            </button>
-          </div>
+          {reviews.length > 3 && (
+            <div className="flex justify-center">
+              <button
+                onClick={() => setShowAllReviews(!showAllReviews)}
+                className="px-12 py-4 border border-outline text-sm font-bold uppercase tracking-widest text-on-surface hover:bg-surface-container-low transition-colors rounded-lg"
+              >
+                {showAllReviews ? "Show Less" : `View All Reviews (${reviews.length})`}
+              </button>
+            </div>
+          )}
         </section>
       </main>
 

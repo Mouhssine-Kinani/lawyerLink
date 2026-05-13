@@ -14,7 +14,7 @@ def get_current_user(credentials:HTTPAuthorizationCredentials = Depends(security
     token = credentials.credentials
     # verify if token is blacklisted(logged out)
     if TokenBlacklist.is_Blacklisted(token,db):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,details="Token has been revoked, Please login again")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail="Token has been revoked, Please login again")
     try:
         payload = decode_token(token)
         user_id = payload.get("sub")

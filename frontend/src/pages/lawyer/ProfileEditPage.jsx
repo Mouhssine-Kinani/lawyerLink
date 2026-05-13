@@ -12,14 +12,12 @@ function imageUrl(path) {
   return `${API_BASE}/${path.replace(/^\//, "")}`;
 }
 
-const PLACEHOLDER_IMAGES = [
-  "https://lh3.googleusercontent.com/aida-public/AB6AXuCRCKxGzp6_RP2TueZfgTzC250PEJid_LvtCfiwDTdVUM27Qqu6fboagZtErjdkJMVR9DEu93pX9K8tkoTZj5yaEuiDrZqgpoUXsNr2iDTXuujVfkDXDAlEsV4VQySBHwmkqtbIAWicgch0ZY7-8AqmccIRHveoNzEoum82VsdmbTpdk9tmg3WOkFNwoPtnMAr9jJsx0vO4_uAb2ZBCJ5hhtM7Zlz6O7g7TDjEMzueNPkKC4TINRo6WCMxqM_SR96AUAwgjGgc3e6Ou",
-  "https://lh3.googleusercontent.com/aida-public/AB6AXuCYuUYsNycerWuKUp4MmLw_hVvhB4JEiDRUyTZIPkzqSC38InmblOtZMxS_z9fbu97lj668_Suaiv3a_lMhbPDKofWwOEE5i3H27nsgaJEQFgKYebN7kpcoMa7Ctq9Gf1iKa8dC9dToNUud-FbV0u3_DQoFMcY06I1r9dibSytUM_Va72vS8MJgh8zua1BoIg96bmhR8XZN7jWMcst5j3pRFp6_xsGUbDjYedCl-58qK_cHb_hBpspantd01l_2fOQHrP5pXONlv-v8",
-  "https://lh3.googleusercontent.com/aida-public/AB6AXuDiDOOSRikWKLdQPzFC9BLwFCIXIUlsAa0QPKjCY4ZN11X9Q9dH7ksVQImn6VVQ3l4TU6RityjlsQXzlAaZPHDhLy7PoLGSL134WXktHPrUMX3WQhDaadHVVoG_CKyh2P_g-0KxEBB7ya5MUjbrnDzbmktmS5WrFXlfmvE22z-BG5y34nYYoOpOTk84qOp5f7ePDbUu8vq95wZ1FJy7UqAR2PwpaJrQmiKdUNmygGs6l9nXVKLInmYhNuZwRXBkHuz102ksoXs8260T",
-  "https://lh3.googleusercontent.com/aida-public/AB6AXuAR7gw7yoy1-I2YknYUXT8aH0N7csQmjXnorwzmoseMmeVGH4l6HY-YoG4A5cbDNPyp_j0pyzOGzbzpMzhZXDak9gS6t5Zt_jSyoyZLFl8REHqzDBUvYcrnYJki5ci7fvNKR9nW0Cs0jAiBBd2jYdKyuc9jnJHESgntKFrsJcLERdg4vhzawzEqDG5a5Y8FF76ZRiDIQxWArL_-mtyu01iyt2hAn_4zIjMN1Pe8jonzDQh1si4jbiovXi6OjVTgf67A_JBp_5bOmn8M",
-  "https://lh3.googleusercontent.com/aida-public/AB6AXuB7iZsu-Dt4z9_6SarD5qEC4JjcOGtx_9AmIqxJxvwC_WzBAnh-siSkYYvLAh7zZHULxmoKQhfe9_e0PtRCKyaMTVcKpsBmQlbHL3YEyeqzKtkp9ybZl0wx6FROC1PJwMaYB5mJulRzWUHKDT_QBWuoxquZHbjcFRMftQRX78KIIVebUN-e6LLAfePrNLe9JCAO9FMPNBpL_wBtbhqYleLEBS4QKqfgaJfPs_ickAe0WOm985LGloo1mejO9ZnlHwux8-n4OcwQMjBb",
-  "https://lh3.googleusercontent.com/aida-public/AB6AXuBQpk2HMbVWTApacNHxTFpFRhTNeSLHPsFKl-qxrp4Pxxtk5PhB8BFLAVbGpt2nTqxlgKEaZ2-fSaiEVYfxKHUa4aTS7GMqFCTO0gQvWH71-7FuKel3C5_5eYTLDF-LU-MQzxtPd0GkTTGblrLvbGuub1OFn5QU3xQTuR4KUh9IxccNyYfjKKAM_0Lp9gODZm4Q2zrTlWrRKmt6OvXp4A3Hc3HlMmDjGpsak-ugKfG9F-rFGFUWCtf9F8PahKJ-rvxIIleCKzqXKALc",
-];
+const PLACEHOLDER_AVATAR = "data:image/svg+xml," + encodeURIComponent(
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 112 112">
+    <rect width="112" height="112" fill="#e0e0e0"/>
+    <path fill="#bdbdbd" d="M56 56c12.4 0 22.5-10.1 22.5-22.5S68.4 11 56 11 33.5 21.1 33.5 33.5 43.6 56 56 56zm0 11.2C40.3 67.2 11 76.5 11 95v6h90v-6c0-18.5-29.3-27.8-45-27.8z"/>
+  </svg>`
+);
 
 export default function ProfileEditPage() {
   const { token } = useAuth();
@@ -39,9 +37,11 @@ export default function ProfileEditPage() {
     city: "",
     region: "",
   });
+  const [fieldErrors, setFieldErrors] = useState({});
   const [imageUrlState, setImageUrlState] = useState(null);
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
+  const [removeImage, setRemoveImage] = useState(false);
   const [userId, setUserId] = useState(null);
 
   useEffect(() => {
@@ -79,8 +79,33 @@ export default function ProfileEditPage() {
 
   const handleChange = (field) => (e) => {
     setForm((prev) => ({ ...prev, [field]: e.target.value }));
+    setFieldErrors((prev) => ({ ...prev, [field]: "" }));
     setSuccess(false);
   };
+
+  const REQUIRED_FIELDS = ["first_name", "last_name", "firm", "license_number", "specialties", "languages", "hourly_rate", "city", "region"];
+  const FIELD_LABELS = {
+    first_name: "First Name",
+    last_name: "Last Name",
+    firm: "Law Firm",
+    license_number: "License Number",
+    specialties: "Specialties",
+    languages: "Languages",
+    hourly_rate: "Hourly Rate",
+    city: "City",
+    region: "Region / State",
+  };
+
+  function validateForm() {
+    const errors = {};
+    for (const field of REQUIRED_FIELDS) {
+      const val = form[field];
+      if (!val || (typeof val === "string" && !val.trim())) {
+        errors[field] = `${FIELD_LABELS[field]} is required`;
+      }
+    }
+    return errors;
+  }
 
   const handleImageSelect = (e) => {
     const file = e.target.files?.[0];
@@ -95,23 +120,41 @@ export default function ProfileEditPage() {
     }
     setImageFile(file);
     setImagePreview(URL.createObjectURL(file));
+    setRemoveImage(false);
+    setError(null);
+  };
+
+  const handleRemoveImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
+    setImageUrlState(null);
+    setRemoveImage(true);
     setError(null);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!token) return;
+
+    const errors = validateForm();
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      setError("Please fill in all required fields.");
+      return;
+    }
+
     setSaving(true);
     setError(null);
     setSuccess(false);
 
     try {
-      if (imageFile) {
+      if (removeImage) {
+        await lawyerApi.deleteProfileImage(token).catch(() => {});
+      } else if (imageFile) {
         const result = await lawyerApi.uploadProfileImage(imageFile, token);
         setImageUrlState(result.image_url);
       }
 
-      // Parse specialties: comma-separated input -> JSON array string
       const specialtiesArr = form.specialties
         .split(",")
         .map((s) => s.trim())
@@ -119,15 +162,15 @@ export default function ProfileEditPage() {
       const specialtiesJson = JSON.stringify(specialtiesArr);
 
       const updateData = {
-        first_name: form.first_name || null,
-        last_name: form.last_name || null,
-        firm: form.firm || null,
-        license_number: form.license_number || null,
+        first_name: form.first_name.trim(),
+        last_name: form.last_name.trim(),
+        firm: form.firm.trim(),
+        license_number: form.license_number.trim(),
         specialties: specialtiesJson,
-        languages: form.languages || null,
-        hourly_rate: form.hourly_rate ? parseFloat(form.hourly_rate) : null,
-        city: form.city || null,
-        region: form.region || null,
+        languages: form.languages.trim(),
+        hourly_rate: parseFloat(form.hourly_rate),
+        city: form.city.trim(),
+        region: form.region.trim(),
       };
 
       await lawyerApi.updateProfile(updateData, token);
@@ -192,7 +235,7 @@ export default function ProfileEditPage() {
                 <img
                   className="w-full h-full object-cover"
                   alt="Profile preview"
-                  src={imagePreview || imageUrl(imageUrlState) || PLACEHOLDER_IMAGES[(userId || 0) % PLACEHOLDER_IMAGES.length]}
+                  src={imagePreview || imageUrl(imageUrlState) || PLACEHOLDER_AVATAR}
                 />
               </div>
               <div className="space-y-3">
@@ -200,6 +243,15 @@ export default function ProfileEditPage() {
                   Upload Photo
                   <input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleImageSelect} className="hidden" />
                 </label>
+                {(imageUrlState || imagePreview) && (
+                  <button
+                    type="button"
+                    onClick={handleRemoveImage}
+                    className="block px-6 py-3 border border-outline text-sm font-bold rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-all"
+                  >
+                    Remove
+                  </button>
+                )}
                 <p className="text-xs text-outline">JPEG, PNG, or WEBP. Max 2MB.</p>
               </div>
             </div>
@@ -210,40 +262,48 @@ export default function ProfileEditPage() {
             <h2 className="text-lg font-bold text-on-surface">Basic Information</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">First Name</label>
+                <label className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">First Name *</label>
                 <input
                   value={form.first_name}
                   onChange={handleChange("first_name")}
-                  className="w-full bg-surface-container-high border-none rounded-lg py-3 px-4 text-sm focus:ring-1 focus:ring-primary/30 focus:bg-surface-container-lowest transition-all"
+                  className={`w-full bg-surface-container-high border-none rounded-lg py-3 px-4 text-sm focus:ring-1 focus:ring-primary/30 focus:bg-surface-container-lowest transition-all ${fieldErrors.first_name ? "ring-2 ring-error" : ""}`}
                   placeholder="John"
+                  required
                 />
+                {fieldErrors.first_name && <p className="text-xs text-error">{fieldErrors.first_name}</p>}
               </div>
               <div className="space-y-2">
-                <label className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">Last Name</label>
+                <label className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">Last Name *</label>
                 <input
                   value={form.last_name}
                   onChange={handleChange("last_name")}
-                  className="w-full bg-surface-container-high border-none rounded-lg py-3 px-4 text-sm focus:ring-1 focus:ring-primary/30 focus:bg-surface-container-lowest transition-all"
+                  className={`w-full bg-surface-container-high border-none rounded-lg py-3 px-4 text-sm focus:ring-1 focus:ring-primary/30 focus:bg-surface-container-lowest transition-all ${fieldErrors.last_name ? "ring-2 ring-error" : ""}`}
                   placeholder="Doe"
+                  required
                 />
+                {fieldErrors.last_name && <p className="text-xs text-error">{fieldErrors.last_name}</p>}
               </div>
               <div className="space-y-2">
-                <label className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">Law Firm</label>
+                <label className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">Law Firm *</label>
                 <input
                   value={form.firm}
                   onChange={handleChange("firm")}
-                  className="w-full bg-surface-container-high border-none rounded-lg py-3 px-4 text-sm focus:ring-1 focus:ring-primary/30 focus:bg-surface-container-lowest transition-all"
+                  className={`w-full bg-surface-container-high border-none rounded-lg py-3 px-4 text-sm focus:ring-1 focus:ring-primary/30 focus:bg-surface-container-lowest transition-all ${fieldErrors.firm ? "ring-2 ring-error" : ""}`}
                   placeholder="Doe & Associates"
+                  required
                 />
+                {fieldErrors.firm && <p className="text-xs text-error">{fieldErrors.firm}</p>}
               </div>
               <div className="space-y-2">
-                <label className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">License Number</label>
+                <label className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">License Number *</label>
                 <input
                   value={form.license_number}
                   onChange={handleChange("license_number")}
-                  className="w-full bg-surface-container-high border-none rounded-lg py-3 px-4 text-sm focus:ring-1 focus:ring-primary/30 focus:bg-surface-container-lowest transition-all"
+                  className={`w-full bg-surface-container-high border-none rounded-lg py-3 px-4 text-sm focus:ring-1 focus:ring-primary/30 focus:bg-surface-container-lowest transition-all ${fieldErrors.license_number ? "ring-2 ring-error" : ""}`}
                   placeholder="BAR-12345"
+                  required
                 />
+                {fieldErrors.license_number && <p className="text-xs text-error">{fieldErrors.license_number}</p>}
               </div>
             </div>
           </section>
@@ -253,54 +313,64 @@ export default function ProfileEditPage() {
             <h2 className="text-lg font-bold text-on-surface">Professional Details</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">Specialties</label>
+                <label className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">Specialties *</label>
                 <input
                   value={form.specialties}
                   onChange={handleChange("specialties")}
-                  className="w-full bg-surface-container-high border-none rounded-lg py-3 px-4 text-sm focus:ring-1 focus:ring-primary/30 focus:bg-surface-container-lowest transition-all"
+                  className={`w-full bg-surface-container-high border-none rounded-lg py-3 px-4 text-sm focus:ring-1 focus:ring-primary/30 focus:bg-surface-container-lowest transition-all ${fieldErrors.specialties ? "ring-2 ring-error" : ""}`}
                   placeholder="Corporate Law, Intellectual Property"
+                  required
                 />
                 <p className="text-[10px] text-outline">Comma-separated list</p>
+                {fieldErrors.specialties && <p className="text-xs text-error">{fieldErrors.specialties}</p>}
               </div>
               <div className="space-y-2">
-                <label className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">Languages</label>
+                <label className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">Languages *</label>
                 <input
                   value={form.languages}
                   onChange={handleChange("languages")}
-                  className="w-full bg-surface-container-high border-none rounded-lg py-3 px-4 text-sm focus:ring-1 focus:ring-primary/30 focus:bg-surface-container-lowest transition-all"
+                  className={`w-full bg-surface-container-high border-none rounded-lg py-3 px-4 text-sm focus:ring-1 focus:ring-primary/30 focus:bg-surface-container-lowest transition-all ${fieldErrors.languages ? "ring-2 ring-error" : ""}`}
                   placeholder="English, Spanish, French"
+                  required
                 />
                 <p className="text-[10px] text-outline">Comma-separated list</p>
+                {fieldErrors.languages && <p className="text-xs text-error">{fieldErrors.languages}</p>}
               </div>
               <div className="space-y-2">
-                <label className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">Hourly Rate ($)</label>
+                <label className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">Hourly Rate ($) *</label>
                 <input
                   value={form.hourly_rate}
                   onChange={handleChange("hourly_rate")}
-                  className="w-full bg-surface-container-high border-none rounded-lg py-3 px-4 text-sm focus:ring-1 focus:ring-primary/30 focus:bg-surface-container-lowest transition-all"
+                  className={`w-full bg-surface-container-high border-none rounded-lg py-3 px-4 text-sm focus:ring-1 focus:ring-primary/30 focus:bg-surface-container-lowest transition-all ${fieldErrors.hourly_rate ? "ring-2 ring-error" : ""}`}
                   placeholder="450"
                   type="number"
                   min="0"
                   step="0.01"
+                  required
                 />
+                {fieldErrors.hourly_rate && <p className="text-xs text-error">{fieldErrors.hourly_rate}</p>}
               </div>
               <div className="space-y-2">
-                <label className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">City</label>
+                <label className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">City *</label>
                 <input
                   value={form.city}
                   onChange={handleChange("city")}
-                  className="w-full bg-surface-container-high border-none rounded-lg py-3 px-4 text-sm focus:ring-1 focus:ring-primary/30 focus:bg-surface-container-lowest transition-all"
+                  className={`w-full bg-surface-container-high border-none rounded-lg py-3 px-4 text-sm focus:ring-1 focus:ring-primary/30 focus:bg-surface-container-lowest transition-all ${fieldErrors.city ? "ring-2 ring-error" : ""}`}
                   placeholder="New York"
+                  required
                 />
+                {fieldErrors.city && <p className="text-xs text-error">{fieldErrors.city}</p>}
               </div>
               <div className="space-y-2">
-                <label className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">Region / State</label>
+                <label className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">Region / State *</label>
                 <input
                   value={form.region}
                   onChange={handleChange("region")}
-                  className="w-full bg-surface-container-high border-none rounded-lg py-3 px-4 text-sm focus:ring-1 focus:ring-primary/30 focus:bg-surface-container-lowest transition-all"
+                  className={`w-full bg-surface-container-high border-none rounded-lg py-3 px-4 text-sm focus:ring-1 focus:ring-primary/30 focus:bg-surface-container-lowest transition-all ${fieldErrors.region ? "ring-2 ring-error" : ""}`}
                   placeholder="NY"
+                  required
                 />
+                {fieldErrors.region && <p className="text-xs text-error">{fieldErrors.region}</p>}
               </div>
             </div>
           </section>

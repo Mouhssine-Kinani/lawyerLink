@@ -19,7 +19,7 @@ const navConfig = {
     { path: "/client/lawyers", icon: "gavel", label: "Find Lawyers" },
     { path: "/client/chat", icon: "smart_toy", label: "AI Assistant" },
     { path: "/client/reservations", icon: "event_available", label: "Reservations" },
-    { path: "/client/reviews", icon: "star", label: "Reviews" },
+    { path: "/client/my-reviews", icon: "star", label: "My Reviews" },
   ],
 };
 

@@ -9,7 +9,7 @@ from app.user.model import User, Client
 from app.lawyer.model import Lawyer
 from app.payment.model import Subscription, SubscriptionStatus
 from app.reservation.model import Reservation, ReservationStatus
-from app.reservation.schema import ReservationCreate, ReservationUpdate, ReservationResponse
+from app.reservation.schema import ReservationCreate, ReservationUpdate, ReservationResponse, ReservationWithClientResponse
 
 router = APIRouter(prefix="/reservations",tags=["Reservations"]) #name of endpoints
 
@@ -31,12 +31,15 @@ def create_reservation(data:ReservationCreate,current_user:User = Depends(get_cu
         raise HTTPException(404,'lawyer profile not found')
     # check if lawyer subscription is still active
     today = datetime.now().date()
-    active_sub = db.query(Subscription).filter(
-        Subscription.lawyer_id == data.lawyer_id,
-        Subscription.status == SubscriptionStatus.active, #subscriptionStatus is in schema
-        Subscription.start_date <= today,
-        Subscription.end_date >= today,
-    ).first()
+    try:
+        active_sub = db.query(Subscription).filter(
+            Subscription.lawyer_id == data.lawyer_id,
+            Subscription.status == SubscriptionStatus.active, #subscriptionStatus is in schema
+            Subscription.start_date <= today,
+            Subscription.end_date >= today,
+        ).first()
+    except Exception:
+        raise HTTPException(503,"Unable to verify lawyer subscription. Please try again later.")
     if not active_sub:
         raise HTTPException(404,"the lawyer is not accepting new clients")
     # check if the timeslot is already booked(if the lawyer already have a reservation in this time period)
@@ -47,6 +50,14 @@ def create_reservation(data:ReservationCreate,current_user:User = Depends(get_cu
     ).first()
     if existing:
         raise HTTPException(404,"this time slot is already booked")
+    # check if client already has a pending/accepted reservation with this lawyer
+    existing_client_reservation = db.query(Reservation).filter(
+        Reservation.client_id == client.user_id,
+        Reservation.lawyer_id == data.lawyer_id,
+        Reservation.status.in_([ReservationStatus.pending, ReservationStatus.accepted])
+    ).first()
+    if existing_client_reservation:
+        raise HTTPException(409, "You already have a pending reservation with this lawyer. Please wait for it to be resolved before booking another.")
     # create reservation:
     reservation = Reservation(
         client_id = client.user_id,
@@ -90,6 +101,44 @@ def get_reservations(status:Optional[ReservationStatus] = Query(None), #status c
 
     # get all reservations while respecting the limit and also from newest to oldest
     return query.order_by(Reservation.reservation_date.desc()).limit(limit).all() 
+
+# ──────────────────────────────────────────────────────────────
+# Get Reservations with client info (for lawyers)
+# ──────────────────────────────────────────────────────────────
+@router.get("/with-clients", response_model=list[ReservationWithClientResponse])
+def get_reservations_with_clients(
+    status: Optional[ReservationStatus] = Query(None),
+    limit: int = Query(50, ge=1, le=100),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if current_user.role.value != "lawyer":
+        raise HTTPException(403, "Only lawyers can access this endpoint")
+    query = db.query(Reservation).filter(Reservation.lawyer_id == current_user.id)
+    if status:
+        query = query.filter(Reservation.status == status)
+    reservations = query.order_by(Reservation.reservation_date.desc()).limit(limit).all()
+
+    result = []
+    for r in reservations:
+        client = db.query(Client).filter(Client.user_id == r.client_id).first()
+        client_user = db.query(User).filter(User.id == r.client_id).first() if client else None
+        result.append(ReservationWithClientResponse(
+            id=r.id,
+            client_id=r.client_id,
+            lawyer_id=r.lawyer_id,
+            reservation_date=r.reservation_date,
+            status=r.status,
+            notes=r.notes,
+            created_at=r.created_at,
+            client_first_name=client.first_name if client else None,
+            client_last_name=client.last_name if client else None,
+            client_phone=client.phone if client else None,
+            client_email=client_user.email if client_user else None,
+            client_image_url=client_user.image_url if client_user else None,
+        ))
+    return result
+
 # ──────────────────────────────────────────────────────────────
 # Get Single Reservation
 # ──────────────────────────────────────────────────────────────

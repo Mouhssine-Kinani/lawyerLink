@@ -23,4 +23,3 @@ class Reservation(Base):
     
     client = relationship("Client", back_populates="reservations")
     lawyer = relationship("Lawyer", back_populates="reservations")
-    review = relationship("Review", back_populates="reservation", uselist=False)
