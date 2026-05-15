@@ -307,11 +307,14 @@ export default function ChatPage() {
                     <textarea
                       ref={inputRef}
                       value={input}
-                      onChange={(e) => setInput(e.target.value)}
+                      onChange={(e) => {
+                        setInput(e.target.value);
+                        e.target.style.height = "auto";
+                        e.target.style.height = e.target.scrollHeight + "px";
+                      }}
                       onKeyDown={handleKeyDown}
-                      className="flex-1 bg-transparent border-none focus:ring-0 text-on-surface placeholder:text-outline text-sm py-1.5 resize-none no-scrollbar max-h-32"
+                      className="flex-1 bg-transparent border-none focus:ring-0 text-on-surface placeholder:text-outline text-sm py-1.5 resize-none no-scrollbar"
                       placeholder="Describe your legal issue in detail..."
-                      rows={1}
                       disabled={sending}
                     />
                     <button

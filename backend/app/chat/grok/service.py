@@ -1,32 +1,41 @@
-# backend/app/chat/service.py
 import json
 import re
-import ollama
 import unicodedata
-
 from datetime import datetime, timezone
+from openai import OpenAI
 
-#db
 from sqlalchemy.orm import Session
 from sqlalchemy import case
 
-#models
 from app.chat.model import ChatMessage
 from app.chat.cache import get_cached_specialties, get_cached_cities
-from app.chat.config import MODEL, MAX_HISTORY_MESSAGES, SYSTEM_PROMPT
+from app.chat.config import MAX_HISTORY_MESSAGES, SYSTEM_PROMPT
 from app.lawyer.model import Lawyer
 from app.user.model import User
 from app.payment.model import Subscription, BoostPayment, SubscriptionStatus
+from app.core.config import settings
 
 
-# ─────────────────────────────────────────────────────────────
-# Language detection helper
-# ─────────────────────────────────────────────────────────────
+client = OpenAI(
+    api_key=settings.GROK_API_KEY,
+    base_url="https://api.groq.com/openai/v1"
+)
+GROQ_MODEL = "llama-3.3-70b-versatile"
+
+
+def call_grok(messages: list[dict], temperature: float = 0.3) -> str:
+    response = client.chat.completions.create(
+        model=GROQ_MODEL,
+        messages=messages,
+        temperature=temperature,
+        top_p=0.95,
+    )
+    return response.choices[0].message.content or ""
+
 
 ARABIC_REGEX = re.compile(r'[\u0600-\u06FF]')
 FRENCH_ACCENTS_REGEX = re.compile(r'[éèêàâçîôûëïü]', re.IGNORECASE)
 
-# Use word boundaries to avoid matching inside words
 FRENCH_WORDS_REGEX = re.compile(
     r'\b(je|j\'ai|mon|ma|mes|un|une|le|la|les|des|avec|pour|'
     r'besoin|avocat|aide|probleme|problème|affaire|contrat|divorce)\b',
@@ -35,18 +44,12 @@ FRENCH_WORDS_REGEX = re.compile(
 
 
 def normalize_text(text: str) -> str:
-    """
-    Normalize text:
-    - strip spaces
-    - lowercase
-    - normalize unicode (important for accents)
-    """
     text = text.strip().lower()
     text = unicodedata.normalize("NFKC", text)
     return text
 
+
 def detect_language_from_first_message(session_id: int, db: Session) -> str:
-    # Fetch the first 5 client messages — short openers like "hello" are unreliable
     early_msgs = (
         db.query(ChatMessage.content)
         .filter(
@@ -61,7 +64,6 @@ def detect_language_from_first_message(session_id: int, db: Session) -> str:
     if not early_msgs:
         return "english"
 
-    # Pick the most word-rich message (most signal)
     best_text = max(
         (normalize_text(row[0]) for row in early_msgs if row[0]),
         key=lambda t: len(t.split()),
@@ -73,11 +75,9 @@ def detect_language_from_first_message(session_id: int, db: Session) -> str:
 
     text = best_text
 
-    # ---- Arabic ----
     if ARABIC_REGEX.search(text):
         return "arabic"
 
-    # ---- French scoring ----
     french_score = 0
 
     if FRENCH_ACCENTS_REGEX.search(text):
@@ -95,9 +95,7 @@ def detect_language_from_first_message(session_id: int, db: Session) -> str:
         return "french"
 
     return "english"
-# ─────────────────────────────────────────────────────────────
-# Specialty extraction
-# ─────────────────────────────────────────────────────────────
+
 
 def extract_legal_specialty(session_id: int, db: Session) -> str:
     history = db.query(ChatMessage).filter(
@@ -127,14 +125,10 @@ You MUST reply with ONLY one word or short phrase from this exact list, nothing 
 Do NOT write a sentence. Do NOT explain. Just pick the closest match from the list.
 """
 
-    response = ollama.chat(
-        model=MODEL,
-        messages=[{"role": "user", "content": prompt}],
-        think=False,
-        options={"temperature": 0.0}
-    )
-
-    result = response["message"]["content"].strip().lower()
+    result = call_grok(
+        [{"role": "user", "content": prompt}],
+        temperature=0.0
+    ).strip().lower()
     result = result.replace(".", "").replace(",", "").strip()
 
     if result in all_specialties:
@@ -142,10 +136,6 @@ Do NOT write a sentence. Do NOT explain. Just pick the closest match from the li
 
     return "general"
 
-
-# ─────────────────────────────────────────────────────────────
-# Location extraction
-# ─────────────────────────────────────────────────────────────
 
 def extract_location(session_id: int, db: Session) -> str:
     cities = get_cached_cities(db)
@@ -163,10 +153,6 @@ def extract_location(session_id: int, db: Session) -> str:
 
     return ""
 
-
-# ─────────────────────────────────────────────────────────────
-# Lawyer fetching
-# ─────────────────────────────────────────────────────────────
 
 def fetch_top_lawyers(specialty: str, location: str, db: Session) -> list[dict]:
     now = datetime.now(timezone.utc)
@@ -195,7 +181,6 @@ def fetch_top_lawyers(specialty: str, location: str, db: Session) -> list[dict]:
         Lawyer.user_id.in_(active_sub_ids)
     )
 
-    # Filter by city if provided
     if location:
         city_query = base_query.filter(User.city.ilike(f"%{location}%"))
         results = []
@@ -208,7 +193,6 @@ def fetch_top_lawyers(specialty: str, location: str, db: Session) -> list[dict]:
     else:
         results = []
 
-    # Fallback: ignore city filter
     if not results:
         if specialty and specialty != "general":
             results = base_query.filter(
@@ -246,10 +230,6 @@ def fetch_top_lawyers(specialty: str, location: str, db: Session) -> list[dict]:
     return output
 
 
-# ─────────────────────────────────────────────────────────────
-# AI top-3 picker
-# ─────────────────────────────────────────────────────────────
-
 def get_top3_from_ai(candidates: list[dict], case_summary: str) -> list[dict]:
     if not candidates:
         return []
@@ -270,24 +250,16 @@ Available lawyers:
 Reply ONLY with IDs (comma-separated), no other text. Example: 5,12,3
 """
 
-    response = ollama.chat(
-        model=MODEL,
-        messages=[{"role": "user", "content": prompt}],
-        think=False,
-        options={"temperature": 0.0}
-    )
-
-    result = response["message"]["content"].strip()
+    result = call_grok(
+        [{"role": "user", "content": prompt}],
+        temperature=0.0
+    ).strip()
     try:
         selected_ids = [int(x.strip()) for x in result.split(",") if x.strip().isdigit()]
         return [c for c in candidates if c["id"] in selected_ids[:3]]
     except Exception:
         return candidates[:3]
 
-
-# ─────────────────────────────────────────────────────────────
-# Search orchestration
-# ─────────────────────────────────────────────────────────────
 
 def search_lawyers_for_ai(
     session_id: int,
@@ -315,16 +287,11 @@ def search_lawyers_for_ai(
     return all_recommendations
 
 
-# ─────────────────────────────────────────────────────────────
-# Main AI response entry point
-# ─────────────────────────────────────────────────────────────
-
 def get_ai_response(session_id: int, user_message: str, db: Session) -> dict:
     history = db.query(ChatMessage).filter(
         ChatMessage.session_id == session_id
     ).order_by(ChatMessage.created_at.asc()).limit(MAX_HISTORY_MESSAGES).all()
 
-    # Detect language from first client message and reinforce it in the system prompt
     detected_lang = detect_language_from_first_message(session_id, db)
     lang_injection = f"\n\nCRITICAL REMINDER: The client's language is {detected_lang.upper()}. Every reply MUST be in {detected_lang.upper()} only."
 
@@ -336,14 +303,7 @@ def get_ai_response(session_id: int, user_message: str, db: Session) -> dict:
 
     messages.append({"role": "user", "content": user_message})
 
-    response = ollama.chat(
-        model=MODEL,
-        messages=messages,
-        think=False,
-        options={"temperature": 0.3}
-    )
-
-    ai_message = response["message"]["content"]
+    ai_message = call_grok(messages, temperature=0.3)
 
     lawyers = None
 
@@ -369,10 +329,6 @@ def get_ai_response(session_id: int, user_message: str, db: Session) -> dict:
         "lawyers": lawyers
     }
 
-
-# ─────────────────────────────────────────────────────────────
-# Admin / maintenance utilities
-# ─────────────────────────────────────────────────────────────
 
 def check_and_update_expired_subscriptions(db: Session) -> dict:
     from datetime import date

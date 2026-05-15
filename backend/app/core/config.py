@@ -11,6 +11,7 @@ class Settings():
     ALGORITHM:str = os.getenv("ALGORITHM","HS256")
     ACCESS_TOKEN_EXPIRE_MINUTES:int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES",60))
     GEMINI_API_KEY:str = os.getenv("GEMINI_API_KEY","")
+    GROK_API_KEY:str = os.getenv("GROK_API_KEY","")
     MODEL:str = os.getenv("MODEL")
     ALLOWED_ORIGINS:str = os.getenv("ALLOWED_ORIGINS","http://localhost:5173")
     # upload
