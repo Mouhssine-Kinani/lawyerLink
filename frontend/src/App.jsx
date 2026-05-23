@@ -27,6 +27,7 @@ import LawyerMyReservationsPage from "./pages/lawyer/MyReservationsPage";
 import LawyerProfileEditPage from "./pages/lawyer/ProfileEditPage";
 import LawyerSubscriptionPage from "./pages/lawyer/SubscriptionPage";
 import LawyerBoostPage from "./pages/lawyer/BoostPage";
+import ReviewOnMe from "./pages/lawyer/ReviewOnMe";
 
 // ─── Admin Pages ─────────────────────────────────────────────────────────────
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -95,6 +96,9 @@ export default function App() {
           />
           <Route path="/lawyer/subscription"
             element={<RoleRoute requiredRole="lawyer"><LawyerSubscriptionPage /></RoleRoute>}
+          />
+          <Route path="/lawyer/reviews"
+            element={<RoleRoute requiredRole="lawyer"><ReviewOnMe /></RoleRoute>}
           />
           <Route path="/lawyer/boost"
             element={<RoleRoute requiredRole="lawyer"><LawyerBoostPage /></RoleRoute>}

@@ -44,6 +44,35 @@ function formatCurrency(amount) {
 const PLAN_LABELS = { basic: "Basic", pro: "Pro", elite: "Elite" };
 const PLAN_COLORS = { basic: "bg-surface-container-high text-on-surface-variant", pro: "bg-primary-container text-on-primary-container", elite: "bg-secondary-fixed text-on-secondary-fixed" };
 
+function renderStars(rating) {
+  const stars = [];
+  for (let i = 0; i < 5; i++) {
+    stars.push(
+      <span
+        key={i}
+        className={`material-symbols-outlined text-lg ${i < rating ? "text-tertiary" : "text-outline-variant"}`}
+        style={{ fontVariationSettings: `'FILL' ${i < rating ? 1 : 0}` }}
+      >
+        star
+      </span>,
+    );
+  }
+  return stars;
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return "";
+  const d = new Date(dateStr);
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  return `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+}
+
+function imageUrl(path) {
+  if (!path) return null;
+  if (path.startsWith("http")) return path;
+  return `${API_BASE}/${path.replace(/^\//, "")}`;
+}
+
 export default function DashboardPage() {
   const { token, user } = useAuth();
   const [userId, setUserId] = useState(null);
@@ -54,6 +83,7 @@ export default function DashboardPage() {
   const [ratingData, setRatingData] = useState([]);
   const [totalReviews, setTotalReviews] = useState(0);
   const [avgRating, setAvgRating] = useState(0);
+  const [recentReviews, setRecentReviews] = useState([]);
   const [completedTodayCount, setCompletedTodayCount] = useState(0);
   const [pendingCount, setPendingCount] = useState(0);
   const [subscription, setSubscription] = useState(null);
@@ -108,6 +138,9 @@ export default function DashboardPage() {
       })
       .then((reviews) => {
         if (!reviews) reviews = [];
+        setRecentReviews(
+          [...reviews].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 4),
+        );
         setTotalReviews(reviews.length);
 
         if (reviews.length > 0) {
@@ -370,6 +403,62 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
+
+          {/* Recent Reviews */}
+          {recentReviews.length > 0 && (
+            <section className="space-y-8">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-label font-bold text-on-surface-variant uppercase tracking-widest">Recent Reviews</p>
+                  <h3 className="text-2xl font-bold mt-1 text-on-surface">Latest Feedback</h3>
+                </div>
+                <Link
+                  to="/lawyer/reviews"
+                  className="text-sm font-bold text-primary hover:underline"
+                >
+                  View All
+                </Link>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {recentReviews.map((review) => (
+                  <article
+                    key={review.id}
+                    className="bg-surface-container-lowest rounded-xl ambient-shadow p-8 flex flex-col gap-6 border-l-4 border-tertiary"
+                  >
+                    <div className="flex items-center gap-4">
+                      {review.is_anonymous ? (
+                        <div className="w-14 h-14 rounded-full bg-surface-container-high flex items-center justify-center flex-shrink-0">
+                          <span className="material-symbols-outlined text-outline text-2xl">visibility_off</span>
+                        </div>
+                      ) : (
+                        <img
+                          className="w-14 h-14 rounded-full object-cover ring-4 ring-surface-container-low flex-shrink-0"
+                          src={imageUrl(review.client_image_url) || "data:image/svg+xml," + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 112 112"><rect width="112" height="112" fill="#e0e0e0"/><path fill="#bdbdbd" d="M56 56c12.4 0 22.5-10.1 22.5-22.5S68.4 11 56 11 33.5 21.1 33.5 33.5 43.6 56 56 56zm0 11.2C40.3 67.2 11 76.5 11 95v6h90v-6c0-18.5-29.3-27.8-45-27.8z"/></svg>`)}
+                          alt={review.is_anonymous ? "Anonymous" : `${review.client_first_name || ""} ${review.client_last_name || ""}`}
+                        />
+                      )}
+                      <div className="min-w-0">
+                        <h3 className="text-lg font-bold text-primary truncate">
+                          {review.is_anonymous ? "Anonymous Client" : [review.client_first_name, review.client_last_name].filter(Boolean).join(" ") || "Client"}
+                        </h3>
+                        <div className="flex gap-0.5 mt-1">
+                          {renderStars(review.rating)}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="bg-surface-container-low p-6 rounded-lg italic text-on-surface leading-relaxed">
+                      &ldquo;{review.comment}&rdquo;
+                    </div>
+
+                    <div className="text-xs text-on-surface-variant font-medium">
+                      {formatDate(review.created_at)}
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
+          )}
         </main>
       </div>
     </div>

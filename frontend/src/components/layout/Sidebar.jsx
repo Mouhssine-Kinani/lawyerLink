@@ -13,6 +13,7 @@ const navConfig = {
     { path: "/lawyer/reservations", icon: "event_available", label: "Reservations" },
     { path: "/lawyer/profile", icon: "person", label: "Profile" },
     { path: "/lawyer/subscription", icon: "payments", label: "Subscription" },
+    { path: "/lawyer/reviews", icon: "star", label: "Reviews" },
     // { path: "/lawyer/boost", icon: "trending_up", label: "Boost" },
   ],
   client: [

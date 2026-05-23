@@ -14,6 +14,15 @@ function imageUrl(path) {
   return `${API_BASE}/${path.replace(/^\//, "")}`;
 }
 
+function parseSpecialties(specialties) {
+  if (!specialties) return [];
+  try {
+    const parsed = JSON.parse(specialties);
+    if (Array.isArray(parsed)) return parsed;
+  } catch { /* empty */ }
+  return specialties.split(",").map((s) => s.trim()).filter(Boolean);
+}
+
 export default function ReviewPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -39,19 +48,23 @@ export default function ReviewPage() {
     setLoading(true);
     setError(null);
 
+    let lawyerData = null;
+    let canData = null;
+    let myReviewData = null;
+
     Promise.all([
-      lawyerApi.getLawyerById(lawyerId).catch(() => null),
-      reviewApi.canReviewLawyer(lawyerId, token),
-      reviewApi.getMyReviewForLawyer(lawyerId, token),
+      lawyerApi.getLawyerById(lawyerId).catch(() => null).then(d => { lawyerData = d; }),
+      reviewApi.canReviewLawyer(lawyerId, token).catch(() => null).then(d => { canData = d; }),
+      reviewApi.getMyReviewForLawyer(lawyerId, token).catch(() => null).then(d => { myReviewData = d; }),
     ])
-      .then(([lawyerData, canData, myReview]) => {
+      .then(() => {
         setLawyer(lawyerData);
         setCanReview(canData?.can_review ?? false);
 
-        if (myReview) {
-          setExistingReview(myReview);
-          setRating(myReview.rating);
-          setComment(myReview.comment || "");
+        if (myReviewData) {
+          setExistingReview(myReviewData);
+          setRating(myReviewData.rating);
+          setComment(myReviewData.comment || "");
         }
       })
       .catch((err) => setError(err.message))
@@ -171,7 +184,7 @@ export default function ReviewPage() {
                   <div className="w-full pt-6 border-t border-surface-container-low flex justify-around">
                     <div className="flex flex-col">
                       <span className="text-xs font-bold text-on-surface-variant uppercase tracking-tighter opacity-50">Specialty</span>
-                      <span className="text-sm font-semibold text-on-surface">{lawyer.specialties ? JSON.parse(lawyer.specialties)[0] || "General" : "General"}</span>
+                      <span className="text-sm font-semibold text-on-surface">{parseSpecialties(lawyer.specialties)[0] || "General"}</span>
                     </div>
                     <div className="flex flex-col">
                       <span className="text-xs font-bold text-on-surface-variant uppercase tracking-tighter opacity-50">Rating</span>

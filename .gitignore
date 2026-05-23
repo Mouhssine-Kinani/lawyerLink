@@ -45,3 +45,9 @@ diagrammes
 png_diagramme
 stitch-design
 stitch-design/*
+
+diagrammes/diagram_updated.puml
+diagrammes/gantt_diagram.puml
+diagrammes/usecase_diagram.puml
+
+seed_data.sql
